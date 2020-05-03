@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Profiling.Memory.Experimental;
 using UnityEngine;
-
+using UnityEngine.UIElements.Experimental;
 
 public class masamoveBehaviour : MonoBehaviour
 {
@@ -27,13 +28,69 @@ public class masamoveBehaviour : MonoBehaviour
             anim.speed=1f;
             Time.timeScale=1f;
             playerTimeScale=1f;
+        this.playerInput = LisntenFromKey;
 
+    }
 
+    /// <summary>
+    /// 入力メッセージたち
+    /// </summary>
+    public const uint kRequestRunning = 0x08;
+    public const uint kRotateRight = 0x04;
+    public const uint kRotateLeft = 0x02;
+    public const uint kForward = 0x01;
+    public const uint kNone = 0x00;
+
+    /// <summary>
+    /// インプットリスナーのデリゲート
+    /// </summary>
+    /// <param name="instance">インスタンス：いらないかもしれない</param>
+    /// <returns>入力メッセージ</returns>
+    public delegate uint InputListener(masamoveBehaviour instance);
+
+    /// <summary>入力リスナーデリゲートのインスタンス</summary>
+    private InputListener playerInput = null;
+
+    /// <summary>
+    /// キー入力から入力メッセージを返す
+    /// </summary>
+    /// <param name="instance">インスタンス this なので使わない</param>
+    /// <returns>入力メッセージ</returns>
+    private uint LisntenFromKey(masamoveBehaviour instance)
+    {
+
+        return kNone; 
+    }
+
+    /// <summary>
+    /// パペット用のカウント（例）
+    /// </summary>
+    private int count = 0;
+
+    /// <summary>
+    /// パペット用の入力ソース（例）
+    /// </summary>
+    /// <param name="instance">インスタンス</param>
+    /// <returns>入力メッセージ</returns>
+    private uint PuppetDemo(masamoveBehaviour instance)
+    {
+        uint[] values = new uint[]
+        {
+            kForward,
+            kForward,
+            kForward | kRotateLeft,
+            kForward | kRotateLeft,
+            kForward | kRotateLeft,
+            kForward | kRotateLeft,
+            kForward | kRotateLeft,
+        };
+        return values[this.count++];
     }
 
     void Update()
     {
-        
+        uint msg = this.playerInput(this);
+
         //シフトキーを押しているかどうか？走っているかどうかのフラグセット
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
@@ -68,16 +125,17 @@ public class masamoveBehaviour : MonoBehaviour
             playerTimeScale=1f;
             slowSwitch=false;
         }
-    
+
         //前後移動ロジック
-        if (Input.GetAxis("Vertical")==1)
+        if (Input.GetAxis("Vertical") == 1)
         {
             //アニメーションによる移動をせずにTransformで移動
             //transform.position += transform.forward*speed*playerTimeScale* Time.deltaTime;
-            if (isRun==true){ 
-
-                 //Run状態へ
+            if (isRun == true)
+            {
+                //Run状態へ
                 anim.SetBool("Run", true);
+                anim.SetBool("Walk", false);
             }
             else
             {
@@ -90,8 +148,9 @@ public class masamoveBehaviour : MonoBehaviour
         {
             //Idle状態へ
             anim.SetBool("Walk", false);
+            anim.SetBool("Run", false);
         }
-        
+
 
         //左回転
         if (Input.GetKey(KeyCode.A))
