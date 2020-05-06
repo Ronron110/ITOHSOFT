@@ -8,9 +8,9 @@ using UnityEngine.UIElements.Experimental;
 public class masamoveBehaviour : MonoBehaviour
 {
 
-    public float speed = 3.5f;
-    public float playerTimeScale=1.0f;
-    [SerializeField] public float PlayerHP=300;
+    [SerializeField] public float PlayerHP=300;//プレイヤーの体力
+    [SerializeField] public float controllerDeadzone = 0.2f;//コントローラーのアソび
+
     public float Damage;
     public float slowTimeRemain = 5000;  //スローモーション残り時間
     public Animator anim;               //アニメーター
@@ -28,11 +28,11 @@ public class masamoveBehaviour : MonoBehaviour
         //時間の初期化
             anim.speed=1f;              //アニメーションの再生スピード
             Time.timeScale=1f;          //世の中の時間の進み方
-            playerTimeScale=1f;         //プレイヤーの時間の進み方
 
         //入力の初期値をキーボードにセット（パペットキー入力データと切り替え可能）
         this.playerInput = LisntenFromKey;
 
+        
     }
 
     /// <summary>
@@ -100,12 +100,10 @@ public class masamoveBehaviour : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             isRun = true;
-            speed=5.0f;
         }
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             isRun = false;
-            speed=3.5f;
         }
         // Spaceキーでスローモーションモードへ突入
         if (Input.GetKey(KeyCode.Space) && slowSwitch == false)
@@ -113,38 +111,34 @@ public class masamoveBehaviour : MonoBehaviour
             //if (Time.fixedTime>4 && slowSwitch == false)
             //{
                 slowSwitch =true;                //スローモーション状態をTrueに
-                anim.speed=1;                  //アニメーションの再生スピードを10倍
+                anim.speed=1;                  //アニメーションの再生スピードはノーマルと同じ
                 Time.fixedDeltaTime=0.0002f;    //当たり判定を100倍の頻度で判定
                 Time.timeScale=0.1f;            //世界のタイムスケールを10分の1に
-                //playerTimeScale=0.01f;            //プレイヤーのタイムスケールを10倍に
 
             //} 
         }
         if (slowSwitch == true)
         {
             slowTimeRemain -= 1f;             //スローモーション時間を減らしていく
-            if (anim.speed < 10.0f)            //プレイヤーのアニメーションが5になるまで・・(5の理由は世界のタイムスケールが0.05だから)
+            if (anim.speed < 10.0f)            //プレイヤーのアニメーションが10になるまで・・(1の理由は世界のタイムスケールが0.01だから)
             {
                 //プレイヤーを徐々に動けるようにしていく
-                //playerTimeScale += 0.1f;
                 anim.speed += 0.01f;
-                Debug.Log(anim.speed);
             }
         }
         if (slowTimeRemain<0){              //スローモーション時間切れ
-            Time.fixedDeltaTime=0.02f;      //以下元の世界の状態へ
-            anim.speed=1f;
-            Time.timeScale=1f;
-            //playerTimeScale=1f;
-            slowSwitch=false;
-            slowTimeRemain = 5000;
+            Time.fixedDeltaTime=0.02f;      //当たり判定の頻度も元にもどす
+            anim.speed=1f;                  //プレイヤーの動きを通常の状態へ
+            Time.timeScale=1f;              //世界の時間を元に戻す
+            slowSwitch=false;               //スローモーションスイッチをOff
+            slowTimeRemain = 5000;          //スローモーション時間をリセット
         }
 
         //前後移動ロジック
-        if (Input.GetAxis("Vertical") == 1)
+        //
+        if (Input.GetAxis("Vertical") >controllerDeadzone) //前進キーを押したら（デッドゾーン以上になったら）
         {
-            //アニメーションによる移動をせずにTransformで移動
-            //transform.position += transform.forward*speed*playerTimeScale* Time.deltaTime;
+            //走り状態
             if (isRun == true)
             {
                 //Run状態へ
@@ -193,13 +187,14 @@ public class masamoveBehaviour : MonoBehaviour
     private void LateUpdate()
     {
         //ダメージ処理
-        PlayerHP -= Damage * Time.timeScale;
-        Damage = 0f;
+        PlayerHP -= Damage * Time.timeScale;//スローになっていたらダメージも小さくするため
+
+        Damage = 0f;//今回のフレームの積算ダメージをリセット
+
+        //プレイヤーのHPがゼロになったら
         if (PlayerHP <= 0)
         {
             GameObject ragdoll = (GameObject)Resources.Load("PlayerRagdoll");
-
-
             Instantiate(ragdoll, this.transform.position, Quaternion.identity);//ラグドールの生成
 
             Destroy(this.gameObject);//プレイヤーキャラの消去

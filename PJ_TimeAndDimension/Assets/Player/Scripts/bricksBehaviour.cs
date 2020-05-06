@@ -9,29 +9,25 @@ public class bricksBehaviour : MonoBehaviour
 
     public AudioClip sound1;
     AudioSource audioSource;
-    private bool isBlockFall = false;
-    private bool isBlockhit = false;
-    private bool isBlockDropped = false;
+    private bool isBlockFall = false;  //ブロック落下し始めたかどうかのフラグ
+    private bool isBlockhit = false;    //プレイヤーにヒットしたかどうかのフラグ（何回も同じブロックでダメージを食らわないための仕掛け）
+    private bool isBlockDropped = false; //ブロックが床に落ちたかどうかのフラグ
 
 
     private GameObject PlayerObj;
     void Start()
     {
-
-        PlayerObj = GameObject.Find("Player");
-        
+        PlayerObj = GameObject.Find("Player");        
         audioSource = GetComponent<AudioSource>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        //経過時間が4秒を過ぎたらブロックを落下させる
         if (Time.fixedTime > 4 && isBlockFall==false)
         {
-
-            this.gameObject.GetComponent<Rigidbody>().isKinematic =false;
-            isBlockFall = true;
+            this.gameObject.GetComponent<Rigidbody>().isKinematic =false;//物理エンジンを有効
+            isBlockFall = true;         //落下ステータスOn
 
         }
 
@@ -41,32 +37,22 @@ public class bricksBehaviour : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
 
-
-            Debug.Log(collision.collider.name);
-
-
-        if (isBlockDropped == false)
+        //ブロックがまだ床に落ちてない間
+        if (isBlockDropped != true)
         {
+            //ブロックがプレイヤーに初めてヒットしたか？
 
-
-            if (collision.collider.name == "Player" && isBlockDropped != true && isBlockhit!=true)
+            if (collision.collider.name == "Player" && isBlockhit != true)
             {
-                isBlockhit = true;
-                Debug.Log(collision.collider.name + "が" + this.name + "にヒット");
-                PlayerObj.GetComponent<masamoveBehaviour>().Damage += 300;
+                isBlockhit = true;      //次からヒットしない
+                PlayerObj.GetComponent<masamoveBehaviour>().Damage += 300;  //プレイヤーにダメージを300追加
             }
-
+            //ブロックが床に初めてヒットしたか？
             if (collision.collider.name == "RoomFloor" && isBlockDropped != true )
             {
-                Debug.Log(collision.collider.name + "が" + this.name + " "+isBlockDropped) ;
-                
-                
-                audioSource.PlayOneShot(sound1);
-
-                
-                isBlockDropped = true;
-                gameObject.name = gameObject.name + "Dropped";
-
+                audioSource.PlayOneShot(sound1); //落下音を再生
+                isBlockDropped = true; //次からヒットしない
+                gameObject.name = gameObject.name + "Dropped"; //床に落ちたブロックとしてオブジェクトの名前を変更
 
             }
 
