@@ -6,19 +6,39 @@ using UnityEngine.UI;
 
 public class infoBehaviour : MonoBehaviour
 {
-    private Text myText;    // Start is called before the first frame update
+    private GameObject playerObj;
+    private GameObject animSpeedText;
+    private GameObject slowTimeText;
+    private GameObject playerHPText;
+
+
+
+    private Text animSpeed;   
+    private Text slowTime;    
+    private Text playerHP;    
+
     void Start()
     {
 
-        GameObject obj = GameObject.Find("shadow");
+        playerObj = GameObject.Find("Player");
+        animSpeedText = GameObject.Find("animSpeedText");
+        slowTimeText = GameObject.Find("SlowTimeRemain");
+        playerHPText = GameObject.Find("playerHP");
 
-        myText = GetComponentInChildren<Text>();//UIのテキストの取得の仕方
+
+        animSpeed = animSpeedText.GetComponent<Text>();//UIのテキストの取得の仕方
+        slowTime = slowTimeText.GetComponent<Text>();//UIのテキストの取得の仕方
+        playerHP = playerHPText.GetComponent<Text>();//UIのテキストの取得の仕方
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        myText.text = Time.fixedTime.ToString();
+        animSpeed.text = "amin.speed:"+ playerObj.GetComponent<masamoveBehaviour>().anim.speed.ToString();
+        slowTime.text = "SlowTime:" + playerObj.GetComponent<masamoveBehaviour>().slowTimeRemain.ToString();
+        playerHP.text = "HP:" + playerObj.GetComponent<masamoveBehaviour>().PlayerHP.ToString();
+
     }
+
 }

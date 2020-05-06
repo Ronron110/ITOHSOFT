@@ -29,7 +29,7 @@ public class fanBehaviour : MonoBehaviour
         if (collision.collider.name == "Player")
         {
             //ファンに当たったらダメージを300食らわせる
-            playerObj.GetComponent<masamoveBehaviour>().Damage += 300;
+            playerObj.GetComponent<masamoveBehaviour>().Damage += 300.0f * Time.timeScale;
         }
     }
 }

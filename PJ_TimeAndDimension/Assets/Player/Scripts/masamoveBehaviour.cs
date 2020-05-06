@@ -4,36 +4,39 @@ using UnityEditor.Profiling.Memory.Experimental;
 using UnityEngine;
 using UnityEngine.UIElements.Experimental;
 
+
 public class masamoveBehaviour : MonoBehaviour
 {
+
     public float speed = 3.5f;
     public float playerTimeScale=1.0f;
-    [SerializeField] public int PlayerHP=300;
-    public int Damage;
+    [SerializeField] public float PlayerHP=300;
+    public float Damage;
+    public float slowTimeRemain = 5000;  //スローモーション残り時間
+    public Animator anim;               //アニメーター
+    public Rigidbody rb;                //プレイヤーのRigidbody
+    private bool isRun=false;           //走り中スイッチ
+    private bool slowSwitch=false;      //スローモーションスイッチ
 
-    public Animator anim;
-    public Rigidbody rb;
-    private bool isRun=false;
-    private bool slowSwitch=false;
-// スローモーションの持ち時間
-    private float slowTimeRemain=10000;
-
-    //GameObject camtarget= GameObject.Find("cameraTarget");
-    // Start is called before the first frame update
     void Start()
     {
         // アニメーターの取得
         anim = GetComponent<Animator>();
+        // rigidbodyの取得
         rb = GetComponent<Rigidbody>();
-            anim.speed=1f;
-            Time.timeScale=1f;
-            playerTimeScale=1f;
+
+        //時間の初期化
+            anim.speed=1f;              //アニメーションの再生スピード
+            Time.timeScale=1f;          //世の中の時間の進み方
+            playerTimeScale=1f;         //プレイヤーの時間の進み方
+
+        //入力の初期値をキーボードにセット（パペットキー入力データと切り替え可能）
         this.playerInput = LisntenFromKey;
 
     }
 
     /// <summary>
-    /// 入力メッセージたち
+    /// 入力メッセージたちをBitで表現
     /// </summary>
     public const uint kRequestRunning = 0x08;
     public const uint kRotateRight = 0x04;
@@ -86,10 +89,12 @@ public class masamoveBehaviour : MonoBehaviour
         };
         return values[this.count++];
     }
-
+    //キー入力
     void Update()
     {
+        //-------------------------この実装ってここまでしかやってないね。先にAND取らなあかんかな？
         uint msg = this.playerInput(this);
+        //---------------------------------
 
         //シフトキーを押しているかどうか？走っているかどうかのフラグセット
         if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -108,22 +113,31 @@ public class masamoveBehaviour : MonoBehaviour
             //if (Time.fixedTime>4 && slowSwitch == false)
             //{
                 slowSwitch =true;                //スローモーション状態をTrueに
-                anim.speed=5;                  //アニメーションの再生スピードを10倍
+                anim.speed=1;                  //アニメーションの再生スピードを10倍
                 Time.fixedDeltaTime=0.0002f;    //当たり判定を100倍の頻度で判定
-                Time.timeScale=0.05f;            //世界のタイムスケールを10分の1に
-                playerTimeScale=0.01f;            //プレイヤーのタイムスケールを10倍に
+                Time.timeScale=0.1f;            //世界のタイムスケールを10分の1に
+                //playerTimeScale=0.01f;            //プレイヤーのタイムスケールを10倍に
 
             //} 
         }
-        if (slowSwitch==true){
-            slowTimeRemain-=1f;             //スローモーション時間を減らしていく
+        if (slowSwitch == true)
+        {
+            slowTimeRemain -= 1f;             //スローモーション時間を減らしていく
+            if (anim.speed < 10.0f)            //プレイヤーのアニメーションが5になるまで・・(5の理由は世界のタイムスケールが0.05だから)
+            {
+                //プレイヤーを徐々に動けるようにしていく
+                //playerTimeScale += 0.1f;
+                anim.speed += 0.01f;
+                Debug.Log(anim.speed);
+            }
         }
         if (slowTimeRemain<0){              //スローモーション時間切れ
             Time.fixedDeltaTime=0.02f;      //以下元の世界の状態へ
             anim.speed=1f;
             Time.timeScale=1f;
-            playerTimeScale=1f;
+            //playerTimeScale=1f;
             slowSwitch=false;
+            slowTimeRemain = 5000;
         }
 
         //前後移動ロジック
@@ -155,7 +169,7 @@ public class masamoveBehaviour : MonoBehaviour
         //左回転
         if (Input.GetKey(KeyCode.A))
         {
-            // x軸を軸にして毎秒-2度、回転させるQuaternionを作成（変数をrotとする）
+            // x軸を軸にして毎フレーム-2度、回転させるQuaternionを作成（変数をrotとする）
             Quaternion rot = Quaternion.AngleAxis(-2, Vector3.up);
             // 現在の自信の回転の情報を取得する。
             Quaternion q = this.transform.rotation;
@@ -165,7 +179,7 @@ public class masamoveBehaviour : MonoBehaviour
         //右回転
         if (Input.GetKey(KeyCode.D))
         {
-            // x軸を軸にして毎秒2度、回転させるQuaternionを作成（変数をrotとする）
+            // x軸を軸にして毎フレーム2度、回転させるQuaternionを作成（変数をrotとする）
             Quaternion rot = Quaternion.AngleAxis(2, Vector3.up);
             // 現在の自信の回転の情報を取得する。
             Quaternion q = this.transform.rotation;
@@ -173,19 +187,26 @@ public class masamoveBehaviour : MonoBehaviour
             this.transform.rotation = q * rot;
         }
 
-        PlayerHP -= Damage;
-         
-        if (PlayerHP<=0){
+
+    }
+
+    private void LateUpdate()
+    {
+        //ダメージ処理
+        PlayerHP -= Damage * Time.timeScale;
+        Damage = 0f;
+        if (PlayerHP <= 0)
+        {
             GameObject ragdoll = (GameObject)Resources.Load("PlayerRagdoll");
 
 
-            Instantiate(ragdoll, this.transform.position, Quaternion.identity);
+            Instantiate(ragdoll, this.transform.position, Quaternion.identity);//ラグドールの生成
+
+            Destroy(this.gameObject);//プレイヤーキャラの消去
             
-            Destroy(this.gameObject);
 
         }
     }
 
-    
 
 }
