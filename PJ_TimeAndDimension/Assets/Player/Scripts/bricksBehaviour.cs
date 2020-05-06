@@ -10,6 +10,7 @@ public class bricksBehaviour : MonoBehaviour
     public AudioClip sound1;
     AudioSource audioSource;
     private bool isBlockFall = false;
+    private bool isBlockhit = false;
     private bool isBlockDropped = false;
 
 
@@ -48,8 +49,9 @@ public class bricksBehaviour : MonoBehaviour
         {
 
 
-            if (collision.collider.name == "Player" && isBlockDropped != true)
+            if (collision.collider.name == "Player" && isBlockDropped != true && isBlockhit!=true)
             {
+                isBlockhit = true;
                 Debug.Log(collision.collider.name + "が" + this.name + "にヒット");
                 PlayerObj.GetComponent<masamoveBehaviour>().Damage += 300;
             }

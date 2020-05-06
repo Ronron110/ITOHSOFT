@@ -64,6 +64,8 @@ public class playercameraBehaviour : MonoBehaviour
 
         //RaycastはRaycastHit型のメンバーに当たった場所を返すhit.pointやらRayの当たってるところまでの距離を返すhit.distanceなど色々使えるものがある。
 
+
+
         //プレイヤー（カメラポジション）の真後ろ後ろにRayを射出してカメラの当たり判定を行う
         if (Physics.Raycast(cameraTarget.transform.position, cameraTarget.transform.rotation*Vector3.back,out hit,maxDistance))
         {
@@ -83,8 +85,6 @@ public class playercameraBehaviour : MonoBehaviour
             //画角を戻す
             //cameraself.fieldOfView = Mathf.Lerp(cameraself.fieldOfView, 60, 0.1f);
             //カメラのY軸を戻す
-
-
         }
         //Rayを横に出しているときに使った処理
         //Debug.DrawRay(cameraTarget.transform.position, cameraTarget.transform.rotation * Vector3.left * sideRayLength, Color.red, 0.1f, false);
@@ -97,6 +97,7 @@ public class playercameraBehaviour : MonoBehaviour
         //transform.rotation = cameraTarget.transform.rotation;
 
         //レンズが常にプレイヤーを見つめる処理
+        
         cameraLenz.transform.LookAt(cameraTarget.transform.position);
 
     }
