@@ -13,6 +13,8 @@ public class Residents : MonoBehaviour
     private StateInstance[] residentObjects = new StateInstance[]
     {
         new Transition(),
+        //
+        //
     };
 
     // Start is called before the first frame update

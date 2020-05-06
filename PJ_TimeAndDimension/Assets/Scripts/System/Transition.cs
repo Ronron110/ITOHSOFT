@@ -3,19 +3,27 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
+/// 各ステートが呼び出せるインターフェイス
+/// </summary>
+public interface ITransition
+{
+    /// <see cref="Transition.RequestChangeState(string)"/>
+    void RequestChangeState(string state);
+}
+
+
+/// <summary>
 /// ゲーム状態を遷移するオブジェクト
 /// </summary>
-public class Transition : StateInstance
+public class Transition : StateInstance, ITransition
 {
     #region StateInstances
     /// <summary>ゲーム状態</summary>
     /// <TODO>partial 化する</TODO>
-    private Dictionary<string, StateInstance> gameStates = new Dictionary<string, StateInstance>()
-    {
-    };
+    private Dictionary<string, StateInstance> gameStates = null;
 
     /// <summary>スタートアップステート</summary>
-    private const string kStartupState = "Splash";
+    private const string kStartupState = "Title";
     #endregion
 
     /// <summary>次のステート</summary>
@@ -74,12 +82,64 @@ public class Transition : StateInstance
         {
             Debug.LogWarning("The reserved next state " + this.nextState.Value.Key + "is discarded");
         }
-        this.nextState = new KeyValuePair<string, StateInstance>(state, gameStates[state]);
+        this.nextState = new KeyValuePair<string, StateInstance>(state, this.gameStates[state]);
     }
 
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
     public Transition() : base("System", "Transition")
     {
+        this.gameStates = new Dictionary<string, StateInstance>()
+        {
+            { "Title", new Title(this) },
+            { "Stage1", new Stage1(this) }
+
+        };
 
     }
 }
+
+public class GameState : StateInstance
+{
+    /// <summary>状態遷移インスタンス</summary>
+    private ITransition transition = null;
+
+    /// <summary>導入処理</summary>
+    public override void Enter()
+    {
+    }
+
+    /// <summary>アップデート処理</summary>
+    public override void Update()
+    {
+
+        /// <TODO>ステージノクリア判定</TODO>
+    }
+
+    /// <summary>終了処理</summary>
+    public override void Leave()
+    {
+
+    }
+
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
+    /// <seealso cref="StateInstance"/>
+    public GameState(ITransition i, string c, string n) : base(c, n)
+    {
+        this.transition = i;
+    }
+
+    /// <summary>
+    /// ステート切り替えを要求する
+    /// </summary>
+    /// <param name="state">変更するステート</param>
+    protected void ChangeState(string state)
+    {
+        this.transition.RequestChangeState(state);
+    }
+}
+
 

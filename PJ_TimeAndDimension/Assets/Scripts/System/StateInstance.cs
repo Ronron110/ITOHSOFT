@@ -18,10 +18,10 @@ using UnityEngine;
 public abstract class StateInstance
 {
     /// <summary>カテゴリ名</summary>
-    protected string category;
+    public string category { get; protected set; }
 
     /// <summary>インスタンス名</summary>
-    protected string name;
+    public string name { get; protected set; }
 
     /// <summary>導入処理</summary>
     public abstract void Enter();
