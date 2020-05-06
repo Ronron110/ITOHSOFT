@@ -197,9 +197,8 @@ public class masamoveBehaviour : MonoBehaviour
             GameObject ragdoll = (GameObject)Resources.Load("PlayerRagdoll");
             Instantiate(ragdoll, this.transform.position, Quaternion.identity);//ラグドールの生成
 
-            Destroy(this.gameObject);//プレイヤーキャラの消去
-            
-
+            this.gameObject.SetActive(false);
+            //Destroy(this.gameObject);//プレイヤーキャラの消去
         }
     }
 
