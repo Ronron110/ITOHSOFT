@@ -383,11 +383,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1346158730}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bac769a34a40d41fe83e0e405386fefe, type: 3}
+  m_Script: {fileID: 11500000, guid: 8e02b3c2a1c5c4cd5998d4c9746859ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  titleZero: {x: 0, y: 0, z: 0, w: 0}
-  isRotate: 0
 --- !u!1 &1672056508
 GameObject:
   m_ObjectHideFlags: 0
