@@ -2,45 +2,48 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 常駐オブジェクトの挙動
-/// </summary>
-public class Residents : MonoBehaviour
+namespace AppSystem
 {
     /// <summary>
-    /// 配下の常駐クラスたち
+    /// 常駐オブジェクトの挙動
     /// </summary>
-    private StateInstance[] residentObjects = new StateInstance[]
+    public class Residents : MonoBehaviour
     {
+        /// <summary>
+        /// 配下の常駐クラスたち
+        /// </summary>
+        private StateInstance[] residentObjects = new StateInstance[]
+        {
         new Transition(),
-        //
-        //
-    };
+            //
+            //
+        };
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        Object.DontDestroyOnLoad(GameObject.Find("Residents"));
-        foreach (StateInstance i in this.residentObjects)
+        // Start is called before the first frame update
+        void Start()
         {
-            i.Enter();
+            Object.DontDestroyOnLoad(GameObject.Find("Residents"));
+            foreach (StateInstance i in this.residentObjects)
+            {
+                i.Enter();
+            }
         }
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        foreach (StateInstance i in this.residentObjects)
+        // Update is called once per frame
+        void Update()
         {
-            i.Update();
+            foreach (StateInstance i in this.residentObjects)
+            {
+                i.Update();
+            }
         }
-    }
 
-    private void OnDestroy()
-    {
-        foreach(StateInstance i in this.residentObjects)
+        private void OnDestroy()
         {
-            i.Leave();
+            foreach (StateInstance i in this.residentObjects)
+            {
+                i.Leave();
+            }
         }
     }
 }

@@ -3,31 +3,39 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class Title : GameState
+namespace AppSystem
 {
-    /// <summary>導入処理</summary>
-    public override void Enter()
+    public class Title : GameState
     {
-        SceneManager.LoadScene("Scenes/OutGame/Title");
-    }
+        Transition subScene = null;
 
-    /// <summary>アップデート処理</summary>
-    public override void Update()
-    {
-        if(Input.GetKey(KeyCode.Space))
+        /// <summary>導入処理</summary>
+        public override void Enter()
         {
-            this.ChangeState("Stage1");
+            SceneManager.LoadScene("Scenes/OutGame/Title");
         }
+
+        /// <summary>アップデート処理</summary>
+        public override void Update()
+        {
+            if (Input.GetKey(KeyCode.Space))
+            {
+                this.ChangeState("Stage1");
+            }
+        }
+
+        /// <summary>終了処理</summary>
+        public override void Leave()
+        {
+            SceneManager.UnloadSceneAsync("Scenes/OutGame/Title");
+        }
+
+        /// <summary>コンストラクタ</summary>
+        /// <param name="i">Transition インターフェイス</param>
+        public Title(ITransition i) : base(i, "OutGame", "Title")
+        {
+
+        }
+
     }
-
-    /// <summary>終了処理</summary>
-    public override void Leave()
-    {
-        SceneManager.UnloadSceneAsync("Scenes/OutGame/Title");
-    }
-
-    /// <summary>コンストラクタ</summary>
-    /// <param name="i">Transition インターフェイス</param>
-    public Title(ITransition i) : base(i, "OutGame", "Title") { }
-
 }
