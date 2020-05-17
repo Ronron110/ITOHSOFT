@@ -9,25 +9,44 @@ namespace AppSystem
     {
         Transition subScene = null;
 
+        private TitleObject titleObject = null;
+
         /// <summary>導入処理</summary>
         public override void Enter()
         {
-            SceneManager.LoadScene("Scenes/OutGame/Title");
+            SceneManager.LoadScene("Scene/OutGame/Title");
         }
 
         /// <summary>アップデート処理</summary>
         public override void Update()
         {
-            if (Input.GetKey(KeyCode.Space))
+            if(titleObject == null)
             {
-                this.ChangeState("Stage1");
+                GameObject obj = GameObject.Find("TitleObject");
+                if (obj != null)
+                {
+                    titleObject = obj.GetComponent<TitleObject>();
+                }
+            }
+            else
+            {
+                // スペースの受付
+                if (Input.GetKey(KeyCode.Space))
+                {
+                    // ステートを進める
+                    titleObject.ProceedState();
+                }
+                if (titleObject.IsFinished() == true)
+                {
+                    this.ChangeState("Stage1");
+                }
             }
         }
 
         /// <summary>終了処理</summary>
         public override void Leave()
         {
-            SceneManager.UnloadSceneAsync("Scenes/OutGame/Title");
+            SceneManager.UnloadSceneAsync("Scene/OutGame/Title");
         }
 
         /// <summary>コンストラクタ</summary>
