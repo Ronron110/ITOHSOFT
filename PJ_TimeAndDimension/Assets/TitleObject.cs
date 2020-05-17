@@ -33,7 +33,7 @@ public class TitleObject: MonoBehaviour
     /// <summary>
     /// チューニングを合わせる動きの軌跡を記録するリスト
     /// </summary>
-    private List<Quaternion> trailRotation = new List<Quaternion>();
+    private Stack<Quaternion> trailRotation = new Stack<Quaternion>();
 
     /// <summary>
     /// ステート変数
@@ -85,7 +85,7 @@ public class TitleObject: MonoBehaviour
             case 2:
                 //スタートが押されてタイトルが見える状態
                 transform.rotation = Quaternion.Lerp(transform.rotation, titleZero, 0.5f);
-                this.trailRotation.Add(transform.rotation);
+                this.trailRotation.Push(transform.rotation);
                 double elapsedTime = Time.time - this.startTime;
                 if (elapsedTime >= (kTuningDuration * Time.timeScale))
                 {
@@ -96,8 +96,7 @@ public class TitleObject: MonoBehaviour
 
             case 3:
                 // 動き出す
-                transform.rotation = this.trailRotation[this.trailRotation.Count - 1];
-                this.trailRotation.RemoveAt(this.trailRotation.Count - 1);
+                transform.rotation = this.trailRotation.Pop();
                 if(this.trailRotation.Count == 0)
                 {
                     this.titleState = 4;
