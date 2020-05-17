@@ -192,9 +192,9 @@ public class masamoveBehaviour : MonoBehaviour
         Damage = 0f;//今回のフレームの積算ダメージをリセット
 
         //プレイヤーのHPがゼロになったら
-        if (PlayerHP <= 0)
+        if (PlayerHP <= 0f)
         {
-            GameObject ragdoll = (GameObject)Resources.Load("PlayerRagdoll");
+            GameObject ragdoll = (GameObject)Resources.Load("Player/PreFab/PlayerRagdoll");
             Instantiate(ragdoll, this.transform.position, Quaternion.identity);//ラグドールの生成
 
             this.gameObject.SetActive(false);
