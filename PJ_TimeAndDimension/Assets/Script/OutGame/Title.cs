@@ -46,7 +46,7 @@ namespace AppSystem
         /// <summary>終了処理</summary>
         public override void Leave()
         {
-            SceneManager.UnloadSceneAsync("Scenes/OutGame/Title");
+            SceneManager.UnloadSceneAsync("Scene/OutGame/Title");
         }
 
         /// <summary>コンストラクタ</summary>

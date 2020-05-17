@@ -89,7 +89,7 @@ namespace AppSystem
         /// <summary>導入処理</summary>
         public override void Enter()
         {
-            SceneManager.LoadScene("Scenes/Stage1");
+            SceneManager.LoadScene("Scene/Stage1");
             base.Enter();
         }
 
@@ -102,7 +102,7 @@ namespace AppSystem
         /// <summary>終了処理</summary>
         public override void Leave()
         {
-            SceneManager.UnloadSceneAsync("Scenes/Stage1");
+            SceneManager.UnloadSceneAsync("Scene/Stage1");
         }
 
         public Stage1(ITransition i) : base(i, "InGame", "Stage1") { }
