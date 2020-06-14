@@ -5,20 +5,33 @@ using UnityEngine.SceneManagement;
 
 namespace AppSystem
 {
+    /// <summary>
+    /// タイトルシーンクラス
+    /// </summary>
     public class Title : GameState
     {
+        /// <summary>
+        /// タイトル内のサブシーン遷移インスタンス
+        /// </summary>
         Transition subScene = null;
 
+        /// <summary>
+        /// タイトル画面のコンポーネント
+        /// </summary>
         private TitleObject titleObject = null;
 
-        /// <summary>導入処理</summary>
+        /// <summary>
+        /// 導入処理
+        /// </summary>
         public override void Enter()
         {
             SceneManager.LoadScene("Scene/OutGame/Title");
             FadeProvider.Fader[Residents.kFader].FadeIn(1.0);
         }
 
-        /// <summary>アップデート処理</summary>
+        /// <summary>
+        /// アップデート処理
+        /// </summary>
         public override void Update()
         {
             if(titleObject == null)
@@ -44,7 +57,9 @@ namespace AppSystem
             }
         }
 
-        /// <summary>終了処理</summary>
+        /// <summary>
+        /// 終了処理
+        /// </summary>
         public override void Leave()
         {
             SceneManager.UnloadSceneAsync("Scene/OutGame/Title");
