@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+/// <summary>
+/// タイトルコンポーネント
+/// </summary>
 public class TitleObject: MonoBehaviour
 {
     /// <summary>
