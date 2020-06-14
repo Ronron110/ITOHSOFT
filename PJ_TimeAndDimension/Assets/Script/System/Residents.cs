@@ -10,11 +10,23 @@ namespace AppSystem
     public class Residents : MonoBehaviour
     {
         /// <summary>
+        /// フェーダー名
+        /// </summary>
+        public const string kFader = "GlobalFader";
+
+        /// <summary>
+        /// 常駐オブジェクトのルート
+        /// </summary>
+        [SerializeField]
+        private GameObject residents;
+
+        /// <summary>
         /// 配下の常駐クラスたち
         /// </summary>
         private StateInstance[] residentObjects = new StateInstance[]
         {
-        new Transition(),
+            new Transition(),
+            FadeProvider.Instance,
             //
             //
         };
@@ -22,11 +34,12 @@ namespace AppSystem
         // Start is called before the first frame update
         void Start()
         {
-            Object.DontDestroyOnLoad(GameObject.Find("Residents"));
+            Object.DontDestroyOnLoad(this.residents);
             foreach (StateInstance i in this.residentObjects)
             {
                 i.Enter();
             }
+            FadeProvider.CreateFader(kFader, this.residents);
         }
 
         // Update is called once per frame

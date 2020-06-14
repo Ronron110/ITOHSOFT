@@ -15,6 +15,7 @@ namespace AppSystem
         public override void Enter()
         {
             SceneManager.LoadScene("Scene/OutGame/Title");
+            FadeProvider.Fader[Residents.kFader].FadeIn(1.0);
         }
 
         /// <summary>アップデート処理</summary>
@@ -55,6 +56,5 @@ namespace AppSystem
         {
 
         }
-
     }
 }

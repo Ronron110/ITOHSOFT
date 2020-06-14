@@ -19,19 +19,29 @@ namespace AppSystem
     /// </remarks>
     public abstract class StateInstance
     {
-        /// <summary>カテゴリ名</summary>
+        /// <summary>
+        /// カテゴリ名
+        /// </summary>
         public string category { get; protected set; }
 
-        /// <summary>インスタンス名</summary>
+        /// <summary>
+        /// インスタンス名
+        /// </summary>
         public string name { get; protected set; }
 
-        /// <summary>導入処理</summary>
+        /// <summary>
+        /// 導入処理
+        /// </summary>
         public abstract void Enter();
 
-        /// <summary>アップデート処理</summary>
+        /// <summary>
+        /// アップデート処理
+        /// </summary>
         public abstract void Update();
 
-        /// <summary>終了処理</summary>
+        /// <summary>
+        /// 終了処理
+        /// </summary>
         public abstract void Leave();
 
         /// <summary>
