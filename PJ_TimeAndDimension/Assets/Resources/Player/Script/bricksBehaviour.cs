@@ -48,7 +48,7 @@ public class bricksBehaviour : MonoBehaviour
                 PlayerObj.GetComponent<masamoveBehaviour>().Damage += 300;  //プレイヤーにダメージを300追加
             }
             //ブロックが床に初めてヒットしたか？
-            if (collision.collider.name == "RoomFloor" && isBlockDropped != true )
+            if (collision.collider.name == "corridor-Floor" && isBlockDropped != true )
             {
                 audioSource.PlayOneShot(sound1); //落下音を再生
                 isBlockDropped = true; //次からヒットしない
