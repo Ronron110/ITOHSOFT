@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEditor.Media;
 using UnityEngine;
 using UnityEngine.UI;
@@ -86,6 +87,13 @@ namespace AppSystem
                     }
                 }
             }
+        }
+
+        /// <summary>フェード中かどうか</summary>
+        /// <returns>true: フェード中です / false: フェード中ではありません</returns>
+        public bool IsActive()
+        {
+            return this.gameObject.activeInHierarchy;
         }
 
         /// <summary>フリーなフェード</summary>
