@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace AppSystem
@@ -19,18 +20,24 @@ namespace AppSystem
     /// </summary>
     public class Transition : StateInstance, ITransition
     {
-        #region StateInstances
-        /// <summary>ゲーム状態</summary>
-        /// <TODO>partial 化する</TODO>
-        private Dictionary<string, StateInstance> gameStates = null;
+        /// <summary>
+        /// 状態リスト
+        /// </summary>
+        private Dictionary<string, StateInstance> states = null;
 
-        /// <summary>スタートアップステート</summary>
-        private const string kStartupState = "Title";
-        #endregion
+        /// <summary>
+        /// スタートアップステート
+        /// </summary>
+        private string startUpState = null;
 
-        /// <summary>次のステート</summary>
+        /// <summary>
+        /// 次のステート
+        /// </summary>
         private KeyValuePair<string, StateInstance>? nextState = null;
-        /// <summary>現在のステート</summary>
+        
+        /// <summary>
+        /// 現在のステート
+        /// </summary>
         private KeyValuePair<string, StateInstance>? currentState = null;
 
         /// <summary>
@@ -38,7 +45,7 @@ namespace AppSystem
         /// </summary>
         public override void Enter()
         {
-            this.RequestChangeState(kStartupState);
+            this.RequestChangeState(this.startUpState);
         }
 
         /// <summary>
@@ -84,39 +91,104 @@ namespace AppSystem
             {
                 Debug.LogWarning("The reserved next state " + this.nextState.Value.Key + "is discarded");
             }
-            this.nextState = new KeyValuePair<string, StateInstance>(state, this.gameStates[state]);
+            this.nextState = new KeyValuePair<string, StateInstance>(state, this.states[state]);
         }
+
+        /// <summary>ステートリストをセットする</summary>
+        /// <param name="s">ステートリスト</param>
+        protected void SetStates(Dictionary<string, StateInstance> s)
+        {
+            this.states = s;
+        }
+
+        /// <summary>コンストラクタ</summary>
+        /// <param name="l">ステートのリスト</param>
+        /// <param name="s">スタートアップステート</param>
+        public Transition(string s) : base("System", "Transition")
+        {
+            this.startUpState = s;
+        }
+    }
+
+    /// <summary>
+    /// ゲーム全体の遷移
+    /// </summary>
+    public class GameTransition : Transition
+    {
+        /// <summary>
+        /// スタートアップステート
+        /// </summary>
+        private const string kStartupState = "Title";
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public Transition() : base("System", "Transition")
+        public GameTransition() : base(kStartupState)
         {
-            this.gameStates = new Dictionary<string, StateInstance>()
-        {
-            { "Title", new Title(this) },
-            { "Stage1", new Stage1(this) }
-
-        };
-
+            Dictionary<string, StateInstance> states = new Dictionary<string, StateInstance>()
+            {
+                { kStartupState, new Title(this) },
+                { "Stage1", new Stage1(this) }
+            };
+            base.SetStates(states);
         }
     }
 
     public class GameState : StateInstance
     {
-        /// <summary>状態遷移インスタンス</summary>
+        /// <summary>
+        /// デフォルトのフェード時間
+        /// </summary>
+        private const double kDefaultSystemFadeDuration = 1.0;
+
+        /// <summary>
+        /// フェード時間
+        /// </summary>
+        protected double fadeDuration = kDefaultSystemFadeDuration;
+
+        /// <summary>
+        /// タイトル内のサブシーン遷移インスタンス
+        /// </summary>
+        Transition subScene = null;
+
+        /// <summary>
+        /// 状態遷移インスタンス
+        /// </summary>
         private ITransition transition = null;
 
-        /// <summary>導入処理</summary>
+        /// <summary>
+        /// 導入処理
+        /// </summary>
         public override void Enter()
         {
+            FadeProvider.Fader[Residents.kFader].FadeIn(1.0);
         }
 
         /// <summary>アップデート処理</summary>
         public override void Update()
         {
+        }
 
-            /// <TODO>ステージノクリア判定</TODO>
+        /// <summary>
+        /// フェードアウトリクエスト
+        /// </summary>
+        protected void RequestFadeOut()
+        {
+            if (AppSystem.FadeProvider.Fader[AppSystem.Residents.kFader].IsActive() == false)
+            {
+                AppSystem.FadeProvider.Fader[AppSystem.Residents.kFader].FadeOut(this.fadeDuration);
+            }
+        }
+
+        /// <summary>
+        /// フェードインリクエスト
+        /// </summary>
+        protected void RequestFadeIn()
+        {
+            if (AppSystem.FadeProvider.Fader[AppSystem.Residents.kFader].IsActive() == false)
+            {
+                AppSystem.FadeProvider.Fader[AppSystem.Residents.kFader].FadeIn(this.fadeDuration);
+            }
         }
 
         /// <summary>終了処理</summary>

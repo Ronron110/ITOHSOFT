@@ -25,7 +25,7 @@ namespace AppSystem
         /// </summary>
         private StateInstance[] residentObjects = new StateInstance[]
         {
-            new Transition(),
+            new GameTransition(),
             FadeProvider.Instance,
             //
             //
