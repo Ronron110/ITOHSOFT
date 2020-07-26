@@ -24,6 +24,7 @@ namespace AppSystem
         /// <summary>導入処理</summary>
         public override void Enter()
         {
+            base.Enter();
             this.isGameOver = false;
             this.gameOverCount = 0.0f;
         }

@@ -11,11 +11,6 @@ namespace AppSystem
     public class Title : GameState
     {
         /// <summary>
-        /// タイトル内のサブシーン遷移インスタンス
-        /// </summary>
-        Transition subScene = null;
-
-        /// <summary>
         /// タイトル画面のコンポーネント
         /// </summary>
         private TitleObject titleObject = null;

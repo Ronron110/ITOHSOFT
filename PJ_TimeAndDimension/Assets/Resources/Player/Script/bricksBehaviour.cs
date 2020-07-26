@@ -41,7 +41,7 @@ public class bricksBehaviour : MonoBehaviour
         if (isBlockDropped != true)
         {
             //ブロックがプレイヤーに初めてヒットしたか？
-
+           
             if (collision.collider.name == "Player" && isBlockhit != true)
             {
                 isBlockhit = true;      //次からヒットしない
