@@ -17,6 +17,7 @@ public class masamoveBehaviour : MonoBehaviour
     public Rigidbody rb;                //プレイヤーのRigidbody
     private bool isRun=false;           //走り中スイッチ
     private bool slowSwitch=false;      //スローモーションスイッチ
+    public float gravity = -0.98f;      //プレイヤーの重力
 
     void Start()
     {
@@ -115,7 +116,7 @@ public class masamoveBehaviour : MonoBehaviour
                 Time.fixedDeltaTime=0.0002f;    //当たり判定を100倍の頻度で判定
                 Time.timeScale=0.1f;            //世界のタイムスケールを10分の1に
                                                 //Physics.gravity  = new Vector3(0.0f,-98.1f,0.0f); //プレイヤの重力だけ10べぇ
-                rb.AddForce(0.0f, -98.1f, 0.0f, ForceMode.VelocityChange);//プレイヤの重力だけ10べぇ
+                gravity= -98f;    //プレイヤの重力だけ10べぇ
 
             //} 
         }
@@ -134,8 +135,7 @@ public class masamoveBehaviour : MonoBehaviour
             Time.timeScale=1f;              //世界の時間を元に戻す
             slowSwitch=false;               //スローモーションスイッチをOff
             slowTimeRemain = 5000;          //スローモーション時間をリセット
-            rb.AddForce(0.0f, -9.81f, 0.0f, ForceMode.VelocityChange);//プレイヤの重力をリセット
-
+            gravity = -9.8f;               //プレイヤの重力をリセット
         }
 
         //前後移動ロジック
@@ -206,5 +206,9 @@ public class masamoveBehaviour : MonoBehaviour
         }
     }
 
+    private void FixedUpdate()
+    {
+       // rb.AddForce(0.0f, gravity, 0.0f, ForceMode.VelocityChange);
 
+    }
 }
