@@ -21,7 +21,7 @@ namespace AppSystem
         public override void Enter()
         {
             SceneManager.LoadScene("Scene/OutGame/Title");
-            FadeProvider.Fader[Residents.kFader].FadeIn(1.0);
+            base.RequestFadeIn();
         }
 
         /// <summary>

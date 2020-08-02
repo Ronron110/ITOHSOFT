@@ -27,6 +27,7 @@ namespace AppSystem
             base.Enter();
             this.isGameOver = false;
             this.gameOverCount = 0.0f;
+            base.RequestFadeIn();
         }
 
         /// <summary>アップデート処理</summary>
