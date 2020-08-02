@@ -18,7 +18,7 @@ namespace AppSystem
         /// 常駐オブジェクトのルート
         /// </summary>
         [SerializeField]
-        private GameObject residents;
+        private GameObject residents = default;
 
         /// <summary>
         /// 配下の常駐クラスたち
