@@ -19,15 +19,20 @@ public class UnstableBlock : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+//        private RaycastHit hit;//Raycastの当たり判定で使う。
+//        private float maxDistance = 0.5f;//Rayの長さを設定
         
     }
 
-    void OnCollisionStay(Collision collision) 
+
+
+
+void OnCollisionStay(Collision collision) 
     {
         if (collision.collider.name == "Player")
         {
-            collapseFloor.OnDamaged(1);
+            //collapseFloor.OnDamaged(1);
+            Debug.Log(collision.collider.name);
         }
     }
-    
 }

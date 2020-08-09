@@ -15,7 +15,7 @@ public class CollapseFloor : MonoBehaviour, ICollapseFloorTriggers
     GameObject unstableBlock;
     GameObject collapsedBlock;
     ParticleSystem particle;
-    public int blockDamage = 10;
+    public int blockDamage = 1;
 
     // Start is called before the first frame update
     void Start()

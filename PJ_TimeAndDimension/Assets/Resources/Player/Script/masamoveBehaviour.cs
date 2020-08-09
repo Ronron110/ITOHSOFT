@@ -18,6 +18,8 @@ public class masamoveBehaviour : MonoBehaviour
     private bool isRun=false;           //走り中スイッチ
     private bool slowSwitch=false;      //スローモーションスイッチ
     public float gravity = -0.98f;      //プレイヤーの重力
+    public float playerSpeed = 0.6f;      //プレイヤーの移動速度
+    public float playerTimescale = 1f;    //プレイヤーの時間の進み方
 
     void Start()
     {
@@ -115,8 +117,7 @@ public class masamoveBehaviour : MonoBehaviour
                 anim.speed=1;                  //アニメーションの再生スピードはノーマルと同じ
                 Time.fixedDeltaTime=0.0002f;    //当たり判定を100倍の頻度で判定
                 Time.timeScale=0.1f;            //世界のタイムスケールを10分の1に
-                                                //Physics.gravity  = new Vector3(0.0f,-98.1f,0.0f); //プレイヤの重力だけ10べぇ
-                gravity= -98f;    //プレイヤの重力だけ10べぇ
+                playerTimescale = 10f;           //プレイヤーのタイムスケールを10べぇ
 
             //} 
         }
@@ -127,6 +128,7 @@ public class masamoveBehaviour : MonoBehaviour
             {
                 //プレイヤーを徐々に動けるようにしていく
                 anim.speed += 0.01f;
+
             }
         }
         if (slowTimeRemain<0){              //スローモーション時間切れ
@@ -135,7 +137,8 @@ public class masamoveBehaviour : MonoBehaviour
             Time.timeScale=1f;              //世界の時間を元に戻す
             slowSwitch=false;               //スローモーションスイッチをOff
             slowTimeRemain = 5000;          //スローモーション時間をリセット
-            gravity = -9.8f;               //プレイヤの重力をリセット
+            playerTimescale = 10f;           //プレイヤーのタイムスケールを10べぇ
+            gravity = -0.981f;               //プレイヤの重力をリセット
         }
 
         //前後移動ロジック
@@ -148,12 +151,14 @@ public class masamoveBehaviour : MonoBehaviour
                 //Run状態へ
                 anim.SetBool("Run", true);
                 anim.SetBool("Walk", false);
+                playerSpeed = 1.2f;
             }
             else
             {
                 //Walk状態へ
                 anim.SetBool("Walk", true);
                 anim.SetBool("Run", false);
+                playerSpeed = 0.6f;
             }
         }
         else
@@ -161,7 +166,9 @@ public class masamoveBehaviour : MonoBehaviour
             //Idle状態へ
             anim.SetBool("Walk", false);
             anim.SetBool("Run", false);
+            playerSpeed = 0.0f;
         }
+
 
 
         //左回転
@@ -185,6 +192,7 @@ public class masamoveBehaviour : MonoBehaviour
             this.transform.rotation = q * rot;
         }
 
+        transform.position = transform.position += transform.forward * playerSpeed * Time.deltaTime * playerTimescale;
 
     }
 
@@ -208,7 +216,7 @@ public class masamoveBehaviour : MonoBehaviour
 
     private void FixedUpdate()
     {
-       // rb.AddForce(0.0f, gravity, 0.0f, ForceMode.VelocityChange);
+        //rb.AddForce(0.0f, gravity, 0.0f, ForceMode.VelocityChange);
 
     }
 }
