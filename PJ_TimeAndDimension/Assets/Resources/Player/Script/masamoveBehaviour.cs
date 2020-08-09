@@ -21,6 +21,8 @@ public class masamoveBehaviour : MonoBehaviour
     public float gravity = -0.98f;      //プレイヤーの重力
     public float playerSpeed = 0.6f;      //プレイヤーの移動速度
     public float playerTimescale = 1f;    //プレイヤーの時間の進み方
+    private const float kRayMagnification = 5.0f;
+    private const float kRayHeight = 0.03f;
 
     void Start()
     {
@@ -205,7 +207,9 @@ public class masamoveBehaviour : MonoBehaviour
     private void UpdatePosition(Vector3 dir, float speed)
     {
         // レイキャスト
-        Ray ray = new Ray(this.transform.position, dir);
+        Vector3 org = this.transform.position;
+        org.y += kRayHeight;
+        Ray ray = new Ray(org, dir);
         RaycastHit hit;
         float len = speed * 10.0f;
 #if SHOW_DEBUG_RAYS
