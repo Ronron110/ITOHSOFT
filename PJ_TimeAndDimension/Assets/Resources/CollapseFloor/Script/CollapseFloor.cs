@@ -6,6 +6,7 @@ using UnityEngine;
 public interface ICollapseFloorTriggers
 {
     void OnDamaged(int value);
+    void isDropped();
 }
 
 
@@ -14,7 +15,7 @@ public class CollapseFloor : MonoBehaviour, ICollapseFloorTriggers
     GameObject unstableBlock;
     GameObject collapsedBlock;
     ParticleSystem particle;
-    public int blockDamage = 10;
+    public int blockDamage = 1;
 
     // Start is called before the first frame update
     void Start()
@@ -26,7 +27,7 @@ public class CollapseFloor : MonoBehaviour, ICollapseFloorTriggers
 
     }
 
-    public void OnDamaged(int value)
+    public void OnDamaged(int value) //ブロックの耐久性落ちていく
     {
         blockDamage -= value;
         if (blockDamage <= 0)
@@ -35,6 +36,10 @@ public class CollapseFloor : MonoBehaviour, ICollapseFloorTriggers
             particle.Play();
             collapsedBlock.SetActive(true);
         }
+    }
+    public void isDropped()  //崩れたブロックが下の地面に落ち切った
+    {
+        collapsedBlock.SetActive(false);
     }
 
     // Update is called once per frame
