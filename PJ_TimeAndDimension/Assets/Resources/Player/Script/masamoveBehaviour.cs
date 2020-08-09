@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿//#define SHOW_DEBUG_RAYS
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Profiling.Memory.Experimental;
 using UnityEngine;
@@ -192,8 +193,49 @@ public class masamoveBehaviour : MonoBehaviour
             this.transform.rotation = q * rot;
         }
 
-        transform.position = transform.position += transform.forward * playerSpeed * Time.deltaTime * playerTimescale;
+        this.UpdatePosition(this.transform.forward, playerSpeed * Time.deltaTime * playerTimescale);
+    }
 
+    /// <summary>
+    /// プレイヤー座標の更新
+    /// </summary>
+    /// <remarks>
+    /// 移動方向にレイを飛ばしてヒットしたらヒットしない方向に滑らせる
+    /// </remarks>
+    private void UpdatePosition(Vector3 dir, float speed)
+    {
+        // レイキャスト
+        Ray ray = new Ray(this.transform.position, dir);
+        RaycastHit hit;
+        float len = speed * 10.0f;
+#if SHOW_DEBUG_RAYS
+        Debug.DrawRay(ray.origin, ray.direction * len, Color.yellow, 1.0f);
+#endif
+        // ヒットするなら
+        if (Physics.Raycast(ray, out hit, len))
+        {
+            // 補正ベクトルの算出
+            Vector3 y = Vector3.Cross(dir, hit.normal);
+
+#if SHOW_DEBUG_RAYS
+            Debug.DrawRay(hit.point, hit.normal, Color.blue, 1.0f);
+            Debug.DrawRay(hit.point, y, Color.green, 1.0f);
+#endif
+
+            Vector3 correction = Vector3.Cross(hit.normal, y);
+
+#if SHOW_DEBUG_RAYS
+            Debug.DrawRay(ray.origin, correction * len, Color.red, 1.0f);
+#endif
+
+            // 移動速度は補正ベクトルとの内積
+            float bias = Vector3.Dot(dir, correction);
+
+            dir = correction;
+            speed *= bias;
+        }
+
+        this.transform.position += dir * speed;
     }
 
     private void LateUpdate()
