@@ -31,7 +31,7 @@ void OnCollisionStay(Collision collision)
     {
         if (collision.collider.name == "Player")
         {
-            //collapseFloor.OnDamaged(1);
+            collapseFloor.OnDamaged(1); //ダメージ用インターフェース呼び出し
             Debug.Log(collision.collider.name);
         }
     }
