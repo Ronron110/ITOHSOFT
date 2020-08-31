@@ -9,7 +9,7 @@ public class bricksBehaviour : MonoBehaviour
 
     public AudioClip sound1;
     AudioSource audioSource;
-    private bool isBlockFall = false;  //ブロック落下し始めたかどうかのフラグ
+    private bool isBlockFall = false;  // ブロック落下し始めたかどうかのフラグ
     private bool isBlockhit = false;    //プレイヤーにヒットしたかどうかのフラグ（何回も同じブロックでダメージを食らわないための仕掛け）
     private bool isBlockDropped = false; //ブロックが床に落ちたかどうかのフラグ
 
