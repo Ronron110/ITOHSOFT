@@ -15,30 +15,34 @@ public class masamoveBehaviour : MonoBehaviour
     public float Damage;
     public float slowTimeRemain = 5000;  //スローモーション残り時間
     public Animator anim;               //アニメーター
-    public Rigidbody rb;                //プレイヤーのRigidbody
-    private bool isRun=false;           //走り中スイッチ
+    public CapsuleCollider cupsuleCollider;                //プレイヤーのRigidbody
+    private bool isRun = false;           //走り中スイッチ
+    private bool isDive = false;           //ダイブ中スイッチ
     private bool slowSwitch=false;      //スローモーションスイッチ
     public float gravity = -0.98f;      //プレイヤーの重力
     public float playerSpeed = 0.6f;      //プレイヤーの移動速度
     public float playerTimescale = 1f;    //プレイヤーの時間の進み方
     private const float kRayMagnification = 5.0f;
     private const float kRayHeight = 0.03f;
+    private Vector3 forceTobeadd = Vector3.zero; //
+    private Rigidbody rb;
+
 
     void Start()
     {
-        // アニメーターの取得
+        // Animatorコンポーネントのインスタンス解決
         anim = GetComponent<Animator>();
-        // rigidbodyの取得
+        // CapsuleColliderコンポーネントのインスタンス解決　ジャンプしたときにコライダーの形を変えたい
+        cupsuleCollider = GetComponent<CapsuleCollider>();
+        //Rigidbody コンポーネントのインスタンス解決
         rb = GetComponent<Rigidbody>();
-
         //時間の初期化
-            anim.speed=1f;              //アニメーションの再生スピード
+        anim.speed=1f;              //アニメーションの再生スピード
             Time.timeScale=1f;          //世の中の時間の進み方
 
         //入力の初期値をキーボードにセット（パペットキー入力データと切り替え可能）
         this.playerInput = LisntenFromKey;
 
-        
     }
 
     /// <summary>
@@ -96,6 +100,13 @@ public class masamoveBehaviour : MonoBehaviour
         return values[this.count++];
     }
     //キー入力
+    private void FixedUpdate()
+    {
+        //   rb.AddForce(forceTobeadd * playerTimescale);
+        rb.AddForce(transform.forward*5.0f* playerTimescale);
+        forceTobeadd = Vector3.zero;
+
+    }
     void Update()
     {
         //-------------------------この実装ってここまでしかやってないね。先にAND取らなあかんかな？
@@ -112,7 +123,7 @@ public class masamoveBehaviour : MonoBehaviour
             isRun = false;
         }
         // Spaceキーでスローモーションモードへ突入
-        if (Input.GetKey(KeyCode.Space) && slowSwitch == false)
+        if (Input.GetKey(KeyCode.Return) && slowSwitch == false)
         {
             //if (Time.fixedTime>4 && slowSwitch == false)
             //{
@@ -178,7 +189,7 @@ public class masamoveBehaviour : MonoBehaviour
         if (Input.GetKey(KeyCode.A))
         {
             // x軸を軸にして毎フレーム-2度、回転させるQuaternionを作成（変数をrotとする）
-            Quaternion rot = Quaternion.AngleAxis(-0.5f, Vector3.up);
+            Quaternion rot = Quaternion.AngleAxis(-1f, Vector3.up);
             // 現在の自信の回転の情報を取得する。
             Quaternion q = this.transform.rotation;
             // 合成して、自身に設定
@@ -188,15 +199,52 @@ public class masamoveBehaviour : MonoBehaviour
         if (Input.GetKey(KeyCode.D))
         {
             // x軸を軸にして毎フレーム2度、回転させるQuaternionを作成（変数をrotとする）
-            Quaternion rot = Quaternion.AngleAxis(0.5f, Vector3.up);
+            Quaternion rot = Quaternion.AngleAxis(1f, Vector3.up);
             // 現在の自信の回転の情報を取得する。
             Quaternion q = this.transform.rotation;
             // 合成して、自身に設定
             this.transform.rotation = q * rot;
         }
+        if (Input.GetKey(KeyCode.Space))
+        {
+            //Dive状態へ
+            anim.SetBool("Walk", false);
+            anim.SetBool("Run", false);
+            anim.SetBool("Dive", true);
+        }
+        
+        AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0); //Diveアニメーションの再生状態を取得
+        if (state.IsName("Dive")) //Dive
+        {
+            anim.SetBool("Dive", false);
+        }
 
         this.UpdatePosition(this.transform.forward, playerSpeed * Time.deltaTime * playerTimescale);
     }
+
+    private void Dive()
+    {
+        forceTobeadd = transform.up*5.0f;
+        cupsuleCollider.direction = 2;
+        cupsuleCollider.radius = 0.15f;
+        cupsuleCollider.height = 1.25f;
+
+        Vector3 center = cupsuleCollider.center;
+        center.y = 1.06f;
+        cupsuleCollider.center = center;
+    }
+    private void DiveFinish()
+    {
+        cupsuleCollider.direction = 1;
+        cupsuleCollider.radius = 0.15f;
+        cupsuleCollider.height = 1.77f;
+
+        Vector3 center = cupsuleCollider.center;
+        center.y = 0.84f;
+        cupsuleCollider.center = center;
+
+    }
+
 
     /// <summary>
     /// プレイヤー座標の更新
@@ -239,7 +287,8 @@ public class masamoveBehaviour : MonoBehaviour
             speed *= bias;
         }
 
-        this.transform.position += dir * speed;
+        this.forceTobeadd += dir * speed;
+//        this.transform.position += dir * speed;
     }
 
     private void LateUpdate()
@@ -258,11 +307,5 @@ public class masamoveBehaviour : MonoBehaviour
             this.gameObject.SetActive(false);
             //Destroy(this.gameObject);//プレイヤーキャラの消去
         }
-    }
-
-    private void FixedUpdate()
-    {
-        //rb.AddForce(0.0f, gravity, 0.0f, ForceMode.VelocityChange);
-
     }
 }

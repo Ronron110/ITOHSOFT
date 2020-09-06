@@ -45,7 +45,7 @@ public class CollapseFloor : MonoBehaviour, ICollapseFloorTriggers
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(blockDamage);
+
     }
     
 }
