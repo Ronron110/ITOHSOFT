@@ -24,8 +24,7 @@ public class masamoveBehaviour : MonoBehaviour
     public float playerTimescale = 1f;    //プレイヤーの時間の進み方
     private const float kRayMagnification = 5.0f;
     private const float kRayHeight = 0.03f;
-    private Vector3 forceToBeAdd = Vector3.zero; //
-    private Vector3 currentForce = Vector3.zero; //
+    private Vector3 forceTobeadd = Vector3.zero; //
     private Rigidbody rb;
 
 
@@ -101,10 +100,15 @@ public class masamoveBehaviour : MonoBehaviour
         return values[this.count++];
     }
     //キー入力
+    private void FixedUpdate()
+    {
+        //   rb.AddForce(forceTobeadd * playerTimescale);
+        rb.AddForce(transform.forward*5.0f* playerTimescale);
+        forceTobeadd = Vector3.zero;
+
+    }
     void Update()
     {
-        this.currentForce = Vector3.zero;
-
         //-------------------------この実装ってここまでしかやってないね。先にAND取らなあかんかな？
         uint msg = this.playerInput(this);
         //---------------------------------
@@ -220,7 +224,7 @@ public class masamoveBehaviour : MonoBehaviour
 
     private void Dive()
     {
-        this.currentForce = transform.up*5.0f;
+        forceTobeadd = transform.up*5.0f;
         cupsuleCollider.direction = 2;
         cupsuleCollider.radius = 0.15f;
         cupsuleCollider.height = 1.25f;
@@ -283,27 +287,8 @@ public class masamoveBehaviour : MonoBehaviour
             speed *= bias;
         }
 
-        this.forceToBeAdd += dir * speed;
-        this.forceToBeAdd.y += currentForce.y;
-
-        // 落下中の場合地面とのコリジョン判定をする
-        if (this.forceToBeAdd.y < 0.0f)
-        {
-            // 下向きにレイを飛ばす
-            ray = new Ray(org, Vector3.down);
-
-            // 現在の重力加速度（下向きはマイナスなので絶対値補正）
-            len = -this.forceToBeAdd.y;
-
-            // レイキャスト
-            if (Physics.Raycast(ray, out hit, len))
-            {
-                // ヒットする場合は地面までの距離ぶんだけが移動値
-                this.forceToBeAdd.y = this.transform.position.y - hit.point.y;
-            }
-        }
-
-
+        this.forceTobeadd += dir * speed;
+//        this.transform.position += dir * speed;
     }
 
     private void LateUpdate()
@@ -322,18 +307,5 @@ public class masamoveBehaviour : MonoBehaviour
             this.gameObject.SetActive(false);
             //Destroy(this.gameObject);//プレイヤーキャラの消去
         }
-    }
-
-    /// <summary>
-    /// 物理挙動前処理
-    /// </summary>
-    private void FixedUpdate()
-    {
-        //rb.MovePosition(this.currentPosition);
-        rb.velocity = this.forceToBeAdd * 50.0f;
-        this.forceToBeAdd.x = 0.0f;
-        this.forceToBeAdd.z = 0.0f;
-        this.forceToBeAdd.y += this.gravity * Time.deltaTime;
-        //Debug.Log("FixedUpdate");
     }
 }
