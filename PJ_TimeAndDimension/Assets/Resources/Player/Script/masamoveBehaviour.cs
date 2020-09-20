@@ -22,6 +22,7 @@ public class masamoveBehaviour : MonoBehaviour
     public float gravity = -0.98f;      //プレイヤーの重力
     public float playerSpeed = 0.6f;      //プレイヤーの移動速度
     public float playerTimescale = 1f;    //プレイヤーの時間の進み方
+    private const float kRotationSpeed = 200.0f;
     private const float kRayMagnification = 10.0f;
     private const float kRayHeight = 0.03f;
     private Vector3 forceToBeAdd = Vector3.zero; //
@@ -100,6 +101,7 @@ public class masamoveBehaviour : MonoBehaviour
         };
         return values[this.count++];
     }
+
     //キー入力
     private void FixedUpdate()
     {
@@ -118,7 +120,7 @@ public class masamoveBehaviour : MonoBehaviour
         forceToBeAdd.z = 0.0f;
 
         // y は重力挙動を反映する必要があるので慣性を残し重力加速度を加算
-        forceToBeAdd.y += gravity * Time.deltaTime;
+        forceToBeAdd.y += gravity * Time.fixedDeltaTime;
     }
 
     /// <summary>
@@ -202,15 +204,18 @@ public class masamoveBehaviour : MonoBehaviour
             playerSpeed = 0.0f;
         }
 
-
+        // 回転速度
+        float rotateSpeed = kRotationSpeed * Time.deltaTime;
 
         //左回転
         if (Input.GetKey(KeyCode.A))
         {
             // x軸を軸にして毎フレーム-2度、回転させるQuaternionを作成（変数をrotとする）
-            Quaternion rot = Quaternion.AngleAxis(-1f, Vector3.up);
+            Quaternion rot = Quaternion.AngleAxis(-rotateSpeed, Vector3.up);
+            
             // 現在の自信の回転の情報を取得する。
             Quaternion q = this.transform.rotation;
+            
             // 合成して、自身に設定
             this.transform.rotation = q * rot;
         } 
@@ -218,9 +223,11 @@ public class masamoveBehaviour : MonoBehaviour
         if (Input.GetKey(KeyCode.D))
         {
             // x軸を軸にして毎フレーム2度、回転させるQuaternionを作成（変数をrotとする）
-            Quaternion rot = Quaternion.AngleAxis(1f, Vector3.up);
+            Quaternion rot = Quaternion.AngleAxis(rotateSpeed, Vector3.up);
+
             // 現在の自信の回転の情報を取得する。
             Quaternion q = this.transform.rotation;
+            
             // 合成して、自身に設定
             this.transform.rotation = q * rot;
         }
@@ -238,7 +245,7 @@ public class masamoveBehaviour : MonoBehaviour
             anim.SetBool("Dive", false);
         }
 
-        this.UpdatePosition(this.transform.forward, playerSpeed * Time.deltaTime * playerTimescale);
+        this.UpdatePosition(this.transform.forward, playerSpeed * Time.fixedDeltaTime * playerTimescale);
     }
 
     /// <summary>
@@ -298,7 +305,6 @@ public class masamoveBehaviour : MonoBehaviour
             Debug.DrawRay(hit.point, hit.normal, Color.blue, 1.0f);
             Debug.DrawRay(hit.point, y, Color.green, 1.0f);
 #endif
-
             Vector3 correction = Vector3.Cross(hit.normal, y);
 
 #if SHOW_DEBUG_RAYS
