@@ -22,11 +22,12 @@ public class masamoveBehaviour : MonoBehaviour
     public float gravity = -0.98f;      //プレイヤーの重力
     public float playerSpeed = 0.6f;      //プレイヤーの移動速度
     public float playerTimescale = 1f;    //プレイヤーの時間の進み方
-    private const float kRayMagnification = 5.0f;
+    private const float kRayMagnification = 10.0f;
     private const float kRayHeight = 0.03f;
-    private Vector3 forceTobeadd = Vector3.zero; //
-    private Rigidbody rb;
-
+    private Vector3 forceToBeAdd = Vector3.zero; //
+    private Rigidbody rigidBody = null;
+    private const float kMoveMagnification = 50.0f;
+    private const float kJumpHeigtForce = 0.5f;
 
     void Start()
     {
@@ -35,7 +36,7 @@ public class masamoveBehaviour : MonoBehaviour
         // CapsuleColliderコンポーネントのインスタンス解決　ジャンプしたときにコライダーの形を変えたい
         cupsuleCollider = GetComponent<CapsuleCollider>();
         //Rigidbody コンポーネントのインスタンス解決
-        rb = GetComponent<Rigidbody>();
+        rigidBody = GetComponent<Rigidbody>();
         //時間の初期化
         anim.speed=1f;              //アニメーションの再生スピード
             Time.timeScale=1f;          //世の中の時間の進み方
@@ -102,13 +103,31 @@ public class masamoveBehaviour : MonoBehaviour
     //キー入力
     private void FixedUpdate()
     {
-        //   rb.AddForce(forceTobeadd * playerTimescale);
-        rb.AddForce(transform.forward*5.0f* playerTimescale);
-        forceTobeadd = Vector3.zero;
-
+        // 前のフレームで計算された加算されるべき力を verocity に渡す
+        rigidBody.velocity = forceToBeAdd;
     }
+
+    /// <summary>
+    /// フレーム内でかかる力をリセットする
+    /// </summary>
+    private void ResetForces()
+    {
+        // 慣性がない設定なので x, z はプレイヤーが意図しない限り動かない
+        // したがって、0 でリセット
+        forceToBeAdd.x = 0.0f;
+        forceToBeAdd.z = 0.0f;
+
+        // y は重力挙動を反映する必要があるので慣性を残し重力加速度を加算
+        forceToBeAdd.y += gravity * Time.deltaTime;
+    }
+
+    /// <summary>
+    /// アップデート
+    /// </summary>
     void Update()
     {
+        ResetForces();
+
         //-------------------------この実装ってここまでしかやってないね。先にAND取らなあかんかな？
         uint msg = this.playerInput(this);
         //---------------------------------
@@ -222,9 +241,12 @@ public class masamoveBehaviour : MonoBehaviour
         this.UpdatePosition(this.transform.forward, playerSpeed * Time.deltaTime * playerTimescale);
     }
 
+    /// <summary>
+    /// 飛び込みモーションに入ったときのコールバック
+    /// </summary>
     private void Dive()
     {
-        forceTobeadd = transform.up*5.0f;
+        forceToBeAdd += transform.up * kJumpHeigtForce;
         cupsuleCollider.direction = 2;
         cupsuleCollider.radius = 0.15f;
         cupsuleCollider.height = 1.25f;
@@ -233,6 +255,10 @@ public class masamoveBehaviour : MonoBehaviour
         center.y = 1.06f;
         cupsuleCollider.center = center;
     }
+
+    /// <summary>
+    /// 飛び込みモーションが終わったときのコールバック
+    /// </summary>
     private void DiveFinish()
     {
         cupsuleCollider.direction = 1;
@@ -242,7 +268,6 @@ public class masamoveBehaviour : MonoBehaviour
         Vector3 center = cupsuleCollider.center;
         center.y = 0.84f;
         cupsuleCollider.center = center;
-
     }
 
 
@@ -259,7 +284,7 @@ public class masamoveBehaviour : MonoBehaviour
         org.y += kRayHeight;
         Ray ray = new Ray(org, dir);
         RaycastHit hit;
-        float len = speed * 10.0f;
+        float len = speed * kRayMagnification;
 #if SHOW_DEBUG_RAYS
         Debug.DrawRay(ray.origin, ray.direction * len, Color.yellow, 1.0f);
 #endif
@@ -287,8 +312,25 @@ public class masamoveBehaviour : MonoBehaviour
             speed *= bias;
         }
 
-        this.forceTobeadd += dir * speed;
-//        this.transform.position += dir * speed;
+        // 水平移動分の計算は終わったのでここで一旦加算
+        forceToBeAdd += dir * speed * kMoveMagnification;
+
+        // 落下中（Y がマイナス）の場合地面とのコリジョン判定をする
+        if (forceToBeAdd.y < 0.0f)
+        {
+            // 下向きにレイを飛ばす
+            ray = new Ray(org, Vector3.down);
+
+            // 現在の重力加速度（下向きはマイナスなので絶対値補正）
+            len = -this.forceToBeAdd.y;
+
+            // レイキャスト
+            if (Physics.Raycast(ray, out hit, len))
+            {
+                // ヒットする場合は地面までの距離が移動値
+                this.forceToBeAdd.y = this.transform.position.y - hit.point.y;
+            }
+        }
     }
 
     private void LateUpdate()
