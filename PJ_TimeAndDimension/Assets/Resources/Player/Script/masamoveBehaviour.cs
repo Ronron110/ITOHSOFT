@@ -19,15 +19,22 @@ public class masamoveBehaviour : MonoBehaviour
     private bool isRun = false;           //走り中スイッチ
     private bool isDive = false;           //ダイブ中スイッチ
     private bool slowSwitch=false;      //スローモーションスイッチ
-    public float gravity = -0.98f;      //プレイヤーの重力
-    public float playerSpeed = 0.6f;      //プレイヤーの移動速度
+    public float gravity = UnityEngine.Physics.gravity.y;      //プレイヤーの重力
+
+    [SerializeField]
+    public float runningSpeed=3.0f;
+
+    public float playerSpeed = 1.0f;      //プレイヤーの移動速度
     public float playerTimescale = 1f;    //プレイヤーの時間の進み方
     private const float kRayMagnification = 10.0f;
     private const float kRayHeight = 0.03f;
     private Vector3 forceToBeAdd = Vector3.zero; //
     private Rigidbody rigidBody = null;
-    private const float kMoveMagnification = 50.0f;
-    private const float kJumpHeigtForce = 0.5f;
+
+    private  const float kMoveMagnification = 21.0f;
+    private const float kJumpHeigtForce = 2.8f;
+
+    private bool isDiving;
 
     void Start()
     {
@@ -104,7 +111,12 @@ public class masamoveBehaviour : MonoBehaviour
     private void FixedUpdate()
     {
         // 前のフレームで計算された加算されるべき力を verocity に渡す
-        rigidBody.velocity = forceToBeAdd;
+        Vector3 v = rigidBody.velocity;
+        v.y += forceToBeAdd.y;
+        v.x = forceToBeAdd.x;
+        v.z = forceToBeAdd.z;
+        rigidBody.velocity = v;
+        forceToBeAdd=Vector3.zero;
     }
 
     /// <summary>
@@ -118,7 +130,7 @@ public class masamoveBehaviour : MonoBehaviour
         forceToBeAdd.z = 0.0f;
 
         // y は重力挙動を反映する必要があるので慣性を残し重力加速度を加算
-        forceToBeAdd.y += gravity * Time.deltaTime;
+        forceToBeAdd.y += gravity * Time.fixedDeltaTime * playerTimescale;
     }
 
     /// <summary>
@@ -126,8 +138,7 @@ public class masamoveBehaviour : MonoBehaviour
     /// </summary>
     void Update()
     {
-        ResetForces();
-
+        //ResetForces();
         //-------------------------この実装ってここまでしかやってないね。先にAND取らなあかんかな？
         uint msg = this.playerInput(this);
         //---------------------------------
@@ -144,16 +155,14 @@ public class masamoveBehaviour : MonoBehaviour
         // Spaceキーでスローモーションモードへ突入
         if (Input.GetKey(KeyCode.Return) && slowSwitch == false)
         {
-            //if (Time.fixedTime>4 && slowSwitch == false)
-            //{
-                slowSwitch =true;                //スローモーション状態をTrueに
-                anim.speed=1;                  //アニメーションの再生スピードはノーマルと同じ
-                Time.fixedDeltaTime=0.0002f;    //当たり判定を100倍の頻度で判定
-                Time.timeScale=0.1f;            //世界のタイムスケールを10分の1に
-                playerTimescale = 10f;           //プレイヤーのタイムスケールを10べぇ
-
-            //} 
+            slowSwitch =true;                //スローモーション状態をTrueに
+            anim.speed=1;                  //アニメーションの再生スピードはノーマルと同じ
+            Time.fixedDeltaTime=0.0002f;    //当たり判定を100倍の頻度で判定
+            Time.timeScale=0.1f;            //世界のタイムスケールを10分の1に
+            playerTimescale = 10f;           //プレイヤーのタイムスケールを10べぇ
+            gravity = UnityEngine.Physics.gravity.y * 10.0f;
         }
+
         if (slowSwitch == true)
         {
             slowTimeRemain -= 1f;             //スローモーション時間を減らしていく
@@ -170,8 +179,8 @@ public class masamoveBehaviour : MonoBehaviour
             Time.timeScale=1f;              //世界の時間を元に戻す
             slowSwitch=false;               //スローモーションスイッチをOff
             slowTimeRemain = 5000;          //スローモーション時間をリセット
-            playerTimescale = 10f;           //プレイヤーのタイムスケールを10べぇ
-            gravity = -0.981f;               //プレイヤの重力をリセット
+            playerTimescale = 1f;           //プレイヤーのタイムスケールを10べぇ
+            gravity = UnityEngine.Physics.gravity.y;               //プレイヤの重力をリセット
         }
 
         //前後移動ロジック
@@ -184,14 +193,14 @@ public class masamoveBehaviour : MonoBehaviour
                 //Run状態へ
                 anim.SetBool("Run", true);
                 anim.SetBool("Walk", false);
-                playerSpeed = 1.2f;
+                playerSpeed = runningSpeed;
             }
             else
             {
                 //Walk状態へ
                 anim.SetBool("Walk", true);
                 anim.SetBool("Run", false);
-                playerSpeed = 0.6f;
+                playerSpeed = 1.0f;
             }
         }
         else
@@ -204,26 +213,19 @@ public class masamoveBehaviour : MonoBehaviour
 
 
 
-        //左回転
-        if (Input.GetKey(KeyCode.A))
+        //回転
+        float rotate = Input.GetAxis("Horizontal");
+        if (System.Math.Abs(rotate) >controllerDeadzone)
         {
             // x軸を軸にして毎フレーム-2度、回転させるQuaternionを作成（変数をrotとする）
-            Quaternion rot = Quaternion.AngleAxis(-1f, Vector3.up);
+            Quaternion rot = Quaternion.AngleAxis(-rotate*-100f*Time.deltaTime, Vector3.up);
             // 現在の自信の回転の情報を取得する。
             Quaternion q = this.transform.rotation;
             // 合成して、自身に設定
             this.transform.rotation = q * rot;
         } 
-        //右回転
-        if (Input.GetKey(KeyCode.D))
-        {
-            // x軸を軸にして毎フレーム2度、回転させるQuaternionを作成（変数をrotとする）
-            Quaternion rot = Quaternion.AngleAxis(1f, Vector3.up);
-            // 現在の自信の回転の情報を取得する。
-            Quaternion q = this.transform.rotation;
-            // 合成して、自身に設定
-            this.transform.rotation = q * rot;
-        }
+ 
+ 
         if (Input.GetKey(KeyCode.Space))
         {
             //Dive状態へ
@@ -238,7 +240,7 @@ public class masamoveBehaviour : MonoBehaviour
             anim.SetBool("Dive", false);
         }
 
-        this.UpdatePosition(this.transform.forward, playerSpeed * Time.deltaTime * playerTimescale);
+        this.UpdatePosition(this.transform.forward, playerSpeed * Time.fixedDeltaTime * playerTimescale);
     }
 
     /// <summary>
@@ -246,7 +248,9 @@ public class masamoveBehaviour : MonoBehaviour
     /// </summary>
     private void Dive()
     {
-        forceToBeAdd += transform.up * kJumpHeigtForce;
+        isDiving = true;
+        forceToBeAdd = transform.up * kJumpHeigtForce;
+        //カプセルコライダーを横向きにする
         cupsuleCollider.direction = 2;
         cupsuleCollider.radius = 0.15f;
         cupsuleCollider.height = 1.25f;
@@ -261,6 +265,7 @@ public class masamoveBehaviour : MonoBehaviour
     /// </summary>
     private void DiveFinish()
     {
+        isDiving = false;
         cupsuleCollider.direction = 1;
         cupsuleCollider.radius = 0.15f;
         cupsuleCollider.height = 1.77f;
@@ -288,41 +293,45 @@ public class masamoveBehaviour : MonoBehaviour
 #if SHOW_DEBUG_RAYS
         Debug.DrawRay(ray.origin, ray.direction * len, Color.yellow, 1.0f);
 #endif
-        // ヒットするなら
-        if (Physics.Raycast(ray, out hit, len))
+        if(isDiving == false)
         {
-            // 補正ベクトルの算出
-            Vector3 y = Vector3.Cross(dir, hit.normal);
+            // ヒットするなら
+            if (Physics.Raycast(ray, out hit, len))
+            {
+                // 補正ベクトルの算出
+                Vector3 y = Vector3.Cross(dir, hit.normal);
 
 #if SHOW_DEBUG_RAYS
-            Debug.DrawRay(hit.point, hit.normal, Color.blue, 1.0f);
-            Debug.DrawRay(hit.point, y, Color.green, 1.0f);
+                Debug.DrawRay(hit.point, hit.normal, Color.blue, 1.0f);
+                Debug.DrawRay(hit.point, y, Color.green, 1.0f);
 #endif
 
-            Vector3 correction = Vector3.Cross(hit.normal, y);
+                Vector3 correction = Vector3.Cross(hit.normal, y);
 
 #if SHOW_DEBUG_RAYS
-            Debug.DrawRay(ray.origin, correction * len, Color.red, 1.0f);
+                Debug.DrawRay(ray.origin, correction * len, Color.red, 1.0f);
 #endif
 
-            // 移動速度は補正ベクトルとの内積
-            float bias = Vector3.Dot(dir, correction);
+                // 移動速度は補正ベクトルとの内積
+                float bias = Vector3.Dot(dir, correction);
 
-            dir = correction;
-            speed *= bias;
+                dir = correction;
+                speed *= bias;
+            }
         }
 
         // 水平移動分の計算は終わったのでここで一旦加算
         forceToBeAdd += dir * speed * kMoveMagnification;
-
+    /*
         // 落下中（Y がマイナス）の場合地面とのコリジョン判定をする
         if (forceToBeAdd.y < 0.0f)
         {
             // 下向きにレイを飛ばす
-            ray = new Ray(org, Vector3.down);
+            ray = new Ray(org+new Vector3(0f,0.84f,0f), Vector3.down);
 
             // 現在の重力加速度（下向きはマイナスなので絶対値補正）
             len = -this.forceToBeAdd.y;
+            Debug.DrawRay(ray.origin, ray.direction * len, Color.green, 1.0f);
 
             // レイキャスト
             if (Physics.Raycast(ray, out hit, len))
@@ -331,6 +340,7 @@ public class masamoveBehaviour : MonoBehaviour
                 this.forceToBeAdd.y = this.transform.position.y - hit.point.y;
             }
         }
+    */
     }
 
     private void LateUpdate()
