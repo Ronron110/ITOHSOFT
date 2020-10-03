@@ -18,7 +18,7 @@ public class fanBehaviour : MonoBehaviour
     void Update()
     {
 
-        Quaternion rot = Quaternion.AngleAxis(10 * Time.timeScale, Vector3.forward);
+        Quaternion rot = Quaternion.AngleAxis(5 * Time.timeScale, Vector3.forward);
         // 現在の自信の回転の情報を取得する。
         Quaternion q = this.transform.rotation;
         // 合成して、自身に設定
