@@ -21,11 +21,13 @@ public class masamoveBehaviour : MonoBehaviour
     private bool slowSwitch=false;      //スローモーションスイッチ
     public float gravity = UnityEngine.Physics.gravity.y;      //プレイヤーの重力
 
-    [SerializeField]
-    public float runningSpeed=3.0f;
 
+    public float runningSpeed=0.0f;
+    public float walkingSpeed=0.0f;
     public float playerSpeed = 1.0f;      //プレイヤーの移動速度
     public float playerTimescale = 1f;    //プレイヤーの時間の進み方
+    public float playerGravity = 1f;    //プレイヤーの重力
+    
     private const float kRotationSpeed = 200.0f;
     private const float kRayMagnification = 10.0f;
     private const float kRayHeight = 0.03f;
@@ -45,6 +47,9 @@ public class masamoveBehaviour : MonoBehaviour
         cupsuleCollider = GetComponent<CapsuleCollider>();
         //Rigidbody コンポーネントのインスタンス解決
         rigidBody = GetComponent<Rigidbody>();
+        //フレームレートの固定
+        Application.targetFrameRate=60;
+
         //時間の初期化
         anim.speed=1f;              //アニメーションの再生スピード
             Time.timeScale=1f;          //世の中の時間の進み方
@@ -155,15 +160,12 @@ public class masamoveBehaviour : MonoBehaviour
         {
             isRun = false;
         }
-        // Spaceキーでスローモーションモードへ突入
+        // Enterキーでスローモーションモードへ突入
         if (Input.GetKey(KeyCode.Return) && slowSwitch == false)
         {
             slowSwitch =true;                //スローモーション状態をTrueに
             anim.speed=1;                  //アニメーションの再生スピードはノーマルと同じ
-            Time.fixedDeltaTime=0.0002f;    //当たり判定を100倍の頻度で判定
-            Time.timeScale=0.1f;            //世界のタイムスケールを10分の1に
-            playerTimescale = 10f;           //プレイヤーのタイムスケールを10べぇ
-            gravity = UnityEngine.Physics.gravity.y * 10.0f;
+
         }
 
         if (slowSwitch == true)
@@ -177,13 +179,9 @@ public class masamoveBehaviour : MonoBehaviour
             }
         }
         if (slowTimeRemain<0){              //スローモーション時間切れ
-            Time.fixedDeltaTime=0.02f;      //当たり判定の頻度も元にもどす
             anim.speed=1f;                  //プレイヤーの動きを通常の状態へ
-            Time.timeScale=1f;              //世界の時間を元に戻す
-            slowSwitch=false;               //スローモーションスイッチをOff
+             slowSwitch=false;               //スローモーションスイッチをOff
             slowTimeRemain = 5000;          //スローモーション時間をリセット
-            playerTimescale = 1f;           //プレイヤーのタイムスケールを10べぇ
-            gravity = UnityEngine.Physics.gravity.y;               //プレイヤの重力をリセット
         }
 
         //前後移動ロジック
@@ -203,7 +201,7 @@ public class masamoveBehaviour : MonoBehaviour
                 //Walk状態へ
                 anim.SetBool("Walk", true);
                 anim.SetBool("Run", false);
-                playerSpeed = 1.0f;
+                playerSpeed = walkingSpeed;
             }
         }
         else
@@ -223,7 +221,7 @@ public class masamoveBehaviour : MonoBehaviour
         {
             // x軸を軸にして毎フレーム-2度、回転させるQuaternionを作成（変数をrotとする）
 
-            Quaternion rot = Quaternion.AngleAxis(-rotate*-100f*Time.deltaTime, Vector3.up);
+            Quaternion rot = Quaternion.AngleAxis(-rotate*-100f*Time.deltaTime*playerTimescale, Vector3.up);
 
             // 現在の自信の回転の情報を取得する。
             Quaternion q = this.transform.rotation;
