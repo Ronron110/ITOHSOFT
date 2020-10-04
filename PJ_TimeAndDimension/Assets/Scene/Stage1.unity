@@ -1717,9 +1717,11 @@ MonoBehaviour:
   anim: {fileID: 0}
   cupsuleCollider: {fileID: 0}
   gravity: -0.981
-  runningSpeed: 3
+  runningSpeed: 10.41
+  walkingSpeed: 3.5
   playerSpeed: 0.6
   playerTimescale: 1
+  playerGravity: 1
 --- !u!136 &1873026934
 CapsuleCollider:
   m_ObjectHideFlags: 0
