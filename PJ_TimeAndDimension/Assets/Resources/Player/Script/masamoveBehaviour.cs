@@ -26,6 +26,7 @@ public class masamoveBehaviour : MonoBehaviour
 
     public float playerSpeed = 1.0f;      //プレイヤーの移動速度
     public float playerTimescale = 1f;    //プレイヤーの時間の進み方
+    private const float kRotationSpeed = 200.0f;
     private const float kRayMagnification = 10.0f;
     private const float kRayHeight = 0.03f;
     private Vector3 forceToBeAdd = Vector3.zero; //
@@ -107,6 +108,7 @@ public class masamoveBehaviour : MonoBehaviour
         };
         return values[this.count++];
     }
+
     //キー入力
     private void FixedUpdate()
     {
@@ -131,6 +133,7 @@ public class masamoveBehaviour : MonoBehaviour
 
         // y は重力挙動を反映する必要があるので慣性を残し重力加速度を加算
         forceToBeAdd.y += gravity * Time.fixedDeltaTime * playerTimescale;
+
     }
 
     /// <summary>
@@ -211,21 +214,23 @@ public class masamoveBehaviour : MonoBehaviour
             playerSpeed = 0.0f;
         }
 
-
+        // 回転速度
+        float rotateSpeed = kRotationSpeed * Time.deltaTime;
 
         //回転
         float rotate = Input.GetAxis("Horizontal");
         if (System.Math.Abs(rotate) >controllerDeadzone)
         {
             // x軸を軸にして毎フレーム-2度、回転させるQuaternionを作成（変数をrotとする）
+
             Quaternion rot = Quaternion.AngleAxis(-rotate*-100f*Time.deltaTime, Vector3.up);
+
             // 現在の自信の回転の情報を取得する。
             Quaternion q = this.transform.rotation;
+            
             // 合成して、自身に設定
             this.transform.rotation = q * rot;
         } 
- 
- 
         if (Input.GetKey(KeyCode.Space))
         {
             //Dive状態へ
