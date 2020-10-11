@@ -15,6 +15,7 @@ public class masamoveBehaviour : MonoBehaviour
     public float Damage;
     public float slowTimeRemain = 5000;  //スローモーション残り時間
     public Animator anim;               //アニメーター
+
     public CapsuleCollider cupsuleCollider;                //プレイヤーのRigidbody
     private bool isRun = false;           //走り中スイッチ
     private bool isDive = false;           //ダイブ中スイッチ
@@ -38,6 +39,7 @@ public class masamoveBehaviour : MonoBehaviour
     private const float kJumpHeigtForce = 2.8f;
 
     private bool isDiving;
+    private bool isSliding;
 
     void Start()
     {
@@ -234,22 +236,69 @@ public class masamoveBehaviour : MonoBehaviour
             //Dive状態へ
             anim.SetBool("Walk", false);
             anim.SetBool("Run", false);
-            anim.SetBool("Dive", true);
+            //anim.SetBool("Dive", true);//Dive
+            anim.SetBool("Slide",true); //Slide
+
         }
+
         
+        /*
         AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0); //Diveアニメーションの再生状態を取得
         if (state.IsName("Dive")) //Dive
         {
             anim.SetBool("Dive", false);
         }
+        */
 
+
+        AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0); //Diveアニメーションの再生状態を取得
+        if (state.IsName("Slide")) //Slide
+        {
+            anim.SetBool("Slide", false);
+        }
+        
+        
+        
         this.UpdatePosition(this.transform.forward, playerSpeed * Time.fixedDeltaTime * playerTimescale);
     }
 
-    /// <summary>
-    /// 飛び込みモーションに入ったときのコールバック
+   /// <summary>
+    /// Slideモーションに入ったときのコールバック
     /// </summary>
-    private void Dive()
+    private void SlideStart()
+    {
+        isSliding = true;
+        forceToBeAdd = transform.up * kJumpHeigtForce;
+        //カプセルコライダーを横向きにする
+        cupsuleCollider.direction = 2;
+        cupsuleCollider.radius = 0.1f;
+        cupsuleCollider.height = 1.25f;
+
+        Vector3 center = cupsuleCollider.center;
+        center.y = 0.32f;
+        cupsuleCollider.center = center;
+    }
+
+    /// <summary>
+    /// Slideモーションが終わったときのコールバック
+    /// </summary>
+    private void SlideFinish()
+    {
+        isSliding = false;
+        cupsuleCollider.direction = 1;
+        cupsuleCollider.radius = 0.15f;
+        cupsuleCollider.height = 1.77f;
+
+        Vector3 center = cupsuleCollider.center;
+        center.y = 0.84f;
+        cupsuleCollider.center = center;
+    }
+
+
+/*
+    /// Diveモーションに入ったときのコールバック
+    /// </summary>
+    private void DiveStart()
     {
         isDiving = true;
         forceToBeAdd = transform.up * kJumpHeigtForce;
@@ -277,7 +326,7 @@ public class masamoveBehaviour : MonoBehaviour
         center.y = 0.84f;
         cupsuleCollider.center = center;
     }
-
+*/
 
     /// <summary>
     /// プレイヤー座標の更新
