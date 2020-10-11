@@ -213,7 +213,9 @@ public class masamoveBehaviour : MonoBehaviour
                 //Walk状態へ
                 anim.SetBool("Walk", true);
                 anim.SetBool("Run", false);
+                anim.SetBool("Slide", false);
                 playerSpeed = walkingSpeed;
+                
             }
         }
         else
@@ -221,6 +223,7 @@ public class masamoveBehaviour : MonoBehaviour
             //Idle状態へ
             anim.SetBool("Walk", false);
             anim.SetBool("Run", false);
+            anim.SetBool("Slide", false);
             playerSpeed = 0.0f;
         }
 
