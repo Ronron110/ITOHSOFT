@@ -63,7 +63,7 @@ ModelImporter:
       curves: []
       events:
       - time: 0.2226372
-        functionName: Dive
+        functionName: DiveStart
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
