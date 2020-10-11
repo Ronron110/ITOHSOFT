@@ -32,11 +32,14 @@ public class masamoveBehaviour : MonoBehaviour
     private const float kRotationSpeed = 200.0f;
     private const float kRayMagnification = 10.0f;
     private const float kRayHeight = 0.03f;
-    private Vector3 forceToBeAdd = Vector3.zero; //
+    private Vector3 forceToBeAdd = Vector3.zero; // モーション等による外力
+    private Vector3 velocity = Vector3.zero; // 移動入力による速度
+    private bool uncontrollable = false; // 外力により制御できない状況
     private Rigidbody rigidBody = null;
 
     private  const float kMoveMagnification = 21.0f;
     private const float kJumpHeigtForce = 2.8f;
+    [SerializeField] private float kSlideForwardForce = 4.5f;
 
     private bool isDiving;
     private bool isSliding;
@@ -121,11 +124,18 @@ public class masamoveBehaviour : MonoBehaviour
     {
         // 前のフレームで計算された加算されるべき力を verocity に渡す
         Vector3 v = rigidBody.velocity;
-        v.y += forceToBeAdd.y;
-        v.x = forceToBeAdd.x;
-        v.z = forceToBeAdd.z;
+        if (!uncontrollable)
+        {
+            v.x = velocity.x;
+            v.z = velocity.z;
+            forceToBeAdd = Vector3.zero;
+        }
+        else
+        {
+            v = forceToBeAdd;
+        }
+        velocity = Vector3.zero;
         rigidBody.velocity = v;
-        forceToBeAdd=Vector3.zero;
     }
 
     /// <summary>
@@ -233,12 +243,14 @@ public class masamoveBehaviour : MonoBehaviour
         } 
         if (Input.GetKey(KeyCode.Space))
         {
-            //Dive状態へ
-            anim.SetBool("Walk", false);
-            anim.SetBool("Run", false);
-            //anim.SetBool("Dive", true);//Dive
-            anim.SetBool("Slide",true); //Slide
-
+            if (isRun)
+            {
+                //Dive状態へ
+                anim.SetBool("Walk", false);
+                anim.SetBool("Run", false);
+                //anim.SetBool("Dive", true);//Dive
+                anim.SetBool("Slide", true); //Slide
+            }
         }
 
         
@@ -268,7 +280,8 @@ public class masamoveBehaviour : MonoBehaviour
     private void SlideStart()
     {
         isSliding = true;
-        forceToBeAdd = transform.up * kJumpHeigtForce;
+        forceToBeAdd = transform.forward * kSlideForwardForce;
+        uncontrollable = true;
         //カプセルコライダーを横向きにする
         cupsuleCollider.direction = 2;
         cupsuleCollider.radius = 0.1f;
@@ -285,6 +298,7 @@ public class masamoveBehaviour : MonoBehaviour
     private void SlideFinish()
     {
         isSliding = false;
+        uncontrollable = false;
         cupsuleCollider.direction = 1;
         cupsuleCollider.radius = 0.15f;
         cupsuleCollider.height = 1.77f;
@@ -373,7 +387,7 @@ public class masamoveBehaviour : MonoBehaviour
         }
 
         // 水平移動分の計算は終わったのでここで一旦加算
-        forceToBeAdd += dir * speed * kMoveMagnification;
+        velocity += dir * speed * kMoveMagnification;
     /*
         // 落下中（Y がマイナス）の場合地面とのコリジョン判定をする
         if (forceToBeAdd.y < 0.0f)
