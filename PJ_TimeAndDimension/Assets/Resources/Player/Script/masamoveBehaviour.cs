@@ -17,8 +17,7 @@ public class masamoveBehaviour : MonoBehaviour
     public Animator anim;               //アニメーター
 
     public CapsuleCollider cupsuleCollider;                //プレイヤーのRigidbody
-    private bool isRun = false;           //走り中スイッチ
-    private bool isDive = false;           //ダイブ中スイッチ
+ 
     private bool slowSwitch=false;      //スローモーションスイッチ
     public float gravity = UnityEngine.Physics.gravity.y;      //プレイヤーの重力
 
@@ -31,7 +30,7 @@ public class masamoveBehaviour : MonoBehaviour
     
     private const float kRotationSpeed = 200.0f;
     private const float kRayMagnification = 10.0f;
-    private const float kRayHeight = 0.03f;
+    private const float kRayHeight = 0.84f;
     private Vector3 forceToBeAdd = Vector3.zero; // モーション等による外力
     private Vector3 velocity = Vector3.zero; // 移動入力による速度
     private bool uncontrollable = false; // 外力により制御できない状況
@@ -40,9 +39,12 @@ public class masamoveBehaviour : MonoBehaviour
     private  const float kMoveMagnification = 21.0f;
     private const float kJumpHeigtForce = 2.8f;
     [SerializeField] private float kSlideForwardForce = 4.5f;
-
-    private bool isDiving;
-    private bool isSliding;
+    private bool isRun = false;//走り中スイッチ
+    private bool isDive = false;//ダイブ中スイッチ
+    private bool isDiving=false;
+    private bool isSliding=false;
+    private bool isFalling=false;//落下中 
+    private bool isLand=false;//着地
 
     void Start()
     {
@@ -198,7 +200,7 @@ public class masamoveBehaviour : MonoBehaviour
 
         //前後移動ロジック
         //
-        if (Input.GetAxis("Vertical") >controllerDeadzone) //前進キーを押したら（デッドゾーン以上になったら）
+        if (Input.GetAxisRaw("Vertical") >controllerDeadzone) //前進キーを押したら（デッドゾーン以上になったら）
         {
             //走り状態
             if (isRun == true)
@@ -231,11 +233,11 @@ public class masamoveBehaviour : MonoBehaviour
         float rotateSpeed = kRotationSpeed * Time.deltaTime;
 
         //回転
-        float rotate = Input.GetAxis("Horizontal");
+        float rotate = Input.GetAxisRaw("Horizontal");
         if (System.Math.Abs(rotate) >controllerDeadzone)
         {
             // x軸を軸にして毎フレーム-2度、回転させるQuaternionを作成（変数をrotとする）
-
+           
             Quaternion rot = Quaternion.AngleAxis(-rotate*-100f*Time.deltaTime*playerTimescale, Vector3.up);
 
             // 現在の自信の回転の情報を取得する。
@@ -244,21 +246,49 @@ public class masamoveBehaviour : MonoBehaviour
             // 合成して、自身に設定
             this.transform.rotation = q * rot;
         } 
+
+        //ステータスごとのアニメーションの再生処理
+
+        AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0); //アニメーションの再生状態を取得
+
         if (Input.GetKey(KeyCode.Space))
         {
             if (isRun)
             {
-                //Dive状態へ
+                //Slide状態へ
                 anim.SetBool("Walk", false);
                 anim.SetBool("Run", false);
                 //anim.SetBool("Dive", true);//Dive
                 anim.SetBool("Slide", true); //Slide
             }
         }
+        if (isFalling==true && state.IsName("Fall")==false)
+        {
+                //fall状態へ
+                anim.SetBool("Walk", false);
+                anim.SetBool("Run", false);
+                anim.SetBool("Dive", false);//Dive
+                anim.SetBool("Slide", false); //Slide
+                anim.SetBool("Land",false);
+                anim.SetBool("Fall", true); 
+                
+            
+        }
+        if (isLand==true)
+        {
+            anim.SetBool("Fall", false);
+            anim.SetBool("Land", true);  
+            if (state.IsName("Land"))
+            {
+                anim.SetBool("Land", false);  
+                isLand=false;
+            }
+        }
+       
+
 
         
         /*
-        AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0); //Diveアニメーションの再生状態を取得
         if (state.IsName("Dive")) //Dive
         {
             anim.SetBool("Dive", false);
@@ -266,16 +296,17 @@ public class masamoveBehaviour : MonoBehaviour
         */
 
 
-        AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0); //Diveアニメーションの再生状態を取得
         if (state.IsName("Slide")) //Slide
         {
             anim.SetBool("Slide", false);
         }
         
-        
-        
         this.UpdatePosition(this.transform.forward, playerSpeed * Time.fixedDeltaTime * playerTimescale);
+        //Debug.Log("isFalling"+isFalling);
     }
+
+
+
 
    /// <summary>
     /// Slideモーションに入ったときのコールバック
@@ -388,9 +419,30 @@ public class masamoveBehaviour : MonoBehaviour
                 speed *= bias;
             }
         }
-
         // 水平移動分の計算は終わったのでここで一旦加算
         velocity += dir * speed * kMoveMagnification;
+
+        //落下判定
+            //足元にRayを飛ばして床があるかないかを判定する
+            ray = new Ray(org, Vector3.down*kRayHeight);
+            bool isHit=Physics.Raycast(ray, out hit,kRayHeight*2);
+            //Debug.Log("Rayが当たってるかどうか"+isHit);
+            Debug.DrawRay(ray.origin, Vector3.down*0.84f, Color.green, 1.0f);
+            // レイキャスト
+            if (isHit==false)
+            {
+                isFalling=true;
+                
+                //Debug.Log("落下中");
+            }
+            //落下終了判定
+            if (isFalling==true && isHit==true)
+            {
+                isFalling=false;
+                isLand=true;
+                Debug.Log("着地");
+            }
+
     /*
         // 落下中（Y がマイナス）の場合地面とのコリジョン判定をする
         if (forceToBeAdd.y < 0.0f)
@@ -400,7 +452,7 @@ public class masamoveBehaviour : MonoBehaviour
 
             // 現在の重力加速度（下向きはマイナスなので絶対値補正）
             len = -this.forceToBeAdd.y;
-            Debug.DrawRay(ray.origin, ray.direction * len, Color.green, 1.0f);
+            Debug.DrawRay(ray.origin, ray, Color.green, 1.0f);
 
             // レイキャスト
             if (Physics.Raycast(ray, out hit, len))

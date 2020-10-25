@@ -1,0 +1,208 @@
+diff --git a/PJ_TimeAndDimension/Assets/Resources/Player/Animation/Locomotion/Player@TestAnim.fbx.meta b/PJ_TimeAndDimension/Assets/Resources/Player/Animation/Locomotion/Player@TestAnim.fbx.meta
+index a24623f..1c2d104 100644
+--- a/PJ_TimeAndDimension/Assets/Resources/Player/Animation/Locomotion/Player@TestAnim.fbx.meta
++++ b/PJ_TimeAndDimension/Assets/Resources/Player/Animation/Locomotion/Player@TestAnim.fbx.meta
+@@ -63,7 +63,7 @@ ModelImporter:
+       curves: []
+       events:
+       - time: 0.2226372
+-        functionName: Dive
++        functionName: DiveStart
+         data: 
+         objectReferenceParameter: {instanceID: 0}
+         floatParameter: 0
+diff --git a/PJ_TimeAndDimension/Assets/Resources/Player/Animator/CharacterController.controller b/PJ_TimeAndDimension/Assets/Resources/Player/Animator/CharacterController.controller
+index 5817835..44f9ae1 100644
+--- a/PJ_TimeAndDimension/Assets/Resources/Player/Animator/CharacterController.controller
++++ b/PJ_TimeAndDimension/Assets/Resources/Player/Animator/CharacterController.controller
+@@ -195,9 +195,9 @@ AnimatorStateTransition:
+   m_Mute: 0
+   m_IsExit: 0
+   serializedVersion: 3
+-  m_TransitionDuration: 0.27769455
++  m_TransitionDuration: 0
+   m_TransitionOffset: 0
+-  m_ExitTime: 0.044312187
++  m_ExitTime: 0.04431216
+   m_HasExitTime: 1
+   m_HasFixedDuration: 1
+   m_InterruptionSource: 0
+@@ -4000,13 +4000,13 @@ AnimatorStateMachine:
+     m_Position: {x: 390, y: -180, z: 0}
+   - serializedVersion: 1
+     m_State: {fileID: 3059283923634317808}
+-    m_Position: {x: 1210, y: 20, z: 0}
++    m_Position: {x: 1070, y: 20, z: 0}
+   - serializedVersion: 1
+     m_State: {fileID: 1837360288339319122}
+     m_Position: {x: 550, y: 30, z: 0}
+   - serializedVersion: 1
+     m_State: {fileID: 9158719004409514383}
+-    m_Position: {x: 1150, y: -200, z: 0}
++    m_Position: {x: 1070, y: -200, z: 0}
+   m_ChildStateMachines: []
+   m_AnyStateTransitions: []
+   m_EntryTransitions: []
+@@ -5955,9 +5955,9 @@ AnimatorStateTransition:
+   m_Mute: 0
+   m_IsExit: 0
+   serializedVersion: 3
+-  m_TransitionDuration: 0.09770441
+-  m_TransitionOffset: 1.8954875
+-  m_ExitTime: 0.9778548
++  m_TransitionDuration: 0.36001885
++  m_TransitionOffset: 1.4533843
++  m_ExitTime: 0.729451
+   m_HasExitTime: 1
+   m_HasFixedDuration: 1
+   m_InterruptionSource: 0
+@@ -6045,7 +6045,7 @@ AnimatorState:
+   m_CorrespondingSourceObject: {fileID: 0}
+   m_PrefabInstance: {fileID: 0}
+   m_PrefabAsset: {fileID: 0}
+-  m_Name: SlideRun
++  m_Name: Slide
+   m_Speed: 2.5
+   m_CycleOffset: 0
+   m_Transitions:
+diff --git a/PJ_TimeAndDimension/Assets/Resources/Player/Animator/PlayerDiveNonRootSlide.fbx.meta b/PJ_TimeAndDimension/Assets/Resources/Player/Animator/PlayerDiveNonRootSlide.fbx.meta
+index 85a6d58..705dbda 100644
+--- a/PJ_TimeAndDimension/Assets/Resources/Player/Animator/PlayerDiveNonRootSlide.fbx.meta
++++ b/PJ_TimeAndDimension/Assets/Resources/Player/Animator/PlayerDiveNonRootSlide.fbx.meta
+@@ -76,8 +76,8 @@ ModelImporter:
+       name: skeleton|Slide
+       takeName: skeleton|Slide
+       internalID: 0
+-      firstFrame: 0
+-      lastFrame: 89
++      firstFrame: 23
++      lastFrame: 75
+       wrapMode: 0
+       orientationOffsetY: 0
+       level: 0
+@@ -97,21 +97,14 @@ ModelImporter:
+       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+       curves: []
+       events:
+-      - time: 0.34503394
+-        functionName: NewEvent
+-        data: 
+-        objectReferenceParameter: {instanceID: 0}
+-        floatParameter: 0
+-        intParameter: 0
+-        messageOptions: 0
+-      - time: 0.3502304
++      - time: 0.014032066
+         functionName: SlideStart
+         data: 
+         objectReferenceParameter: {instanceID: 0}
+         floatParameter: 0
+         intParameter: 0
+         messageOptions: 0
+-      - time: 0.7096774
++      - time: 0.78184235
+         functionName: SlideFinish
+         data: 
+         objectReferenceParameter: {instanceID: 0}
+diff --git a/PJ_TimeAndDimension/Assets/Resources/Player/Script/masamoveBehaviour.cs b/PJ_TimeAndDimension/Assets/Resources/Player/Script/masamoveBehaviour.cs
+index 19fde09..3a5a2d2 100644
+--- a/PJ_TimeAndDimension/Assets/Resources/Player/Script/masamoveBehaviour.cs
++++ b/PJ_TimeAndDimension/Assets/Resources/Player/Script/masamoveBehaviour.cs
+@@ -15,6 +15,7 @@ public class masamoveBehaviour : MonoBehaviour
+     public float Damage;
+     public float slowTimeRemain = 5000;  //スローモーション残り時間
+     public Animator anim;               //アニメーター
++
+     public CapsuleCollider cupsuleCollider;                //プレイヤーのRigidbody
+     private bool isRun = false;           //走り中スイッチ
+     private bool isDive = false;           //ダイブ中スイッチ
+@@ -38,6 +39,7 @@ public class masamoveBehaviour : MonoBehaviour
+     private const float kJumpHeigtForce = 2.8f;
+ 
+     private bool isDiving;
++    private bool isSliding;
+ 
+     void Start()
+     {
+@@ -234,22 +236,69 @@ public class masamoveBehaviour : MonoBehaviour
+             //Dive状態へ
+             anim.SetBool("Walk", false);
+             anim.SetBool("Run", false);
+-            anim.SetBool("Dive", true);
++            //anim.SetBool("Dive", true);//Dive
++            anim.SetBool("Slide",true); //Slide
++
+         }
++
+         
++        /*
+         AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0); //Diveアニメーションの再生状態を取得
+         if (state.IsName("Dive")) //Dive
+         {
+             anim.SetBool("Dive", false);
+         }
++        */
+ 
++
++        AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0); //Diveアニメーションの再生状態を取得
++        if (state.IsName("Slide")) //Slide
++        {
++            anim.SetBool("Slide", false);
++        }
++        
++        
++        
+         this.UpdatePosition(this.transform.forward, playerSpeed * Time.fixedDeltaTime * playerTimescale);
+     }
+ 
++   /// <summary>
++    /// Slideモーションに入ったときのコールバック
++    /// </summary>
++    private void SlideStart()
++    {
++        isSliding = true;
++        forceToBeAdd = transform.up * kJumpHeigtForce;
++        //カプセルコライダーを横向きにする
++        cupsuleCollider.direction = 2;
++        cupsuleCollider.radius = 0.1f;
++        cupsuleCollider.height = 1.25f;
++
++        Vector3 center = cupsuleCollider.center;
++        center.y = 0.32f;
++        cupsuleCollider.center = center;
++    }
++
+     /// <summary>
+-    /// 飛び込みモーションに入ったときのコールバック
++    /// Slideモーションが終わったときのコールバック
+     /// </summary>
+-    private void Dive()
++    private void SlideFinish()
++    {
++        isSliding = false;
++        cupsuleCollider.direction = 1;
++        cupsuleCollider.radius = 0.15f;
++        cupsuleCollider.height = 1.77f;
++
++        Vector3 center = cupsuleCollider.center;
++        center.y = 0.84f;
++        cupsuleCollider.center = center;
++    }
++
++
++/*
++    /// Diveモーションに入ったときのコールバック
++    /// </summary>
++    private void DiveStart()
+     {
+         isDiving = true;
+         forceToBeAdd = transform.up * kJumpHeigtForce;
+@@ -277,7 +326,7 @@ public class masamoveBehaviour : MonoBehaviour
+         center.y = 0.84f;
+         cupsuleCollider.center = center;
+     }
+-
++*/
+ 
+     /// <summary>
+     /// プレイヤー座標の更新
